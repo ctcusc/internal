@@ -1,0 +1,32 @@
+* @ctcusc/admins
+
+/.github/workflows/ @ctcusc/infra
+/*.config.* @ctcusc/infra
+/package.json @ctcusc/infra
+/pnpm-* @ctcusc/infra
+/tsconfig.json @ctcusc/infra
+/wrangler.jsonc @ctcusc/infra
+/cloudflare-env.d.ts @ctcusc/infra
+/.npmrc @ctcusc/infra
+/.nvmrc @ctcusc/infra
+/.prettierignore @ctcusc/infra
+
+/src/app/ @ctcusc/frontend
+/src/components/ @ctcusc/frontend
+/src/config/ @ctcusc/frontend
+/src/features/flashcards/ @ctcusc/frontend
+/src/fonts/ @ctcusc/frontend
+/src/lib/utils.ts @ctcusc/frontend
+/src/styles/ @ctcusc/frontend
+/public/ @ctcusc/frontend
+/components.json @ctcusc/frontend
+/postcss.config.js @ctcusc/frontend
+
+/src/server/ @ctcusc/backend
+/src/components/auth/ @ctcusc/frontend @ctcusc/backend
+/src/env.js @ctcusc/backend
+/tests/ @ctcusc/backend
+/.env.example @ctcusc/backend
+/.dev.vars.example @ctcusc/backend @ctcusc/infra
+
+/.github/CODEOWNERS @ctcusc/admins
