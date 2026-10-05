@@ -1,27 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCw, UserRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCw, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import type { Member } from "./members";
 import styles from "./flashcards.module.css";
 
-export function Flashcards() {
+export function Flashcards({ members }: { members: readonly Member[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [showName, setShowName] = useState(false);
+  const member = members[currentIndex];
   const flip = () => setShowName((current) => !current);
+  const changeCard = (index: number) => {
+    setCurrentIndex(index);
+    setShowName(false);
+  };
+
+  if (!member) {
+    return <p className="text-muted-foreground text-sm">No members yet.</p>;
+  }
 
   return (
     <div>
       <Button
+        key={member.id}
         type="button"
         variant="unstyled"
         size="custom"
         onClick={flip}
         aria-label={
           showName
-            ? "Member name. Show photo"
+            ? `${member.name}. Show photo`
             : "Member photo placeholder. Show name"
         }
         className={cn(styles.card, "group block w-full rounded-2xl text-left")}
@@ -50,13 +62,44 @@ export function Flashcards() {
             )}
           >
             <span className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Member name
+              {member.name}
             </span>
           </span>
         </span>
       </Button>
       <div className="mt-5 flex items-center justify-between gap-4">
-        <span className="text-muted-foreground text-xs">Sample card</span>
+        <div className="flex items-center gap-2">
+          {members.length > 1 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => changeCard(currentIndex - 1)}
+              disabled={currentIndex === 0}
+              aria-label="Previous card"
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Button>
+          )}
+          <span
+            className="text-muted-foreground text-xs tabular-nums"
+            aria-label={`Card ${currentIndex + 1} of ${members.length}`}
+          >
+            {currentIndex + 1} / {members.length}
+          </span>
+          {members.length > 1 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => changeCard(currentIndex + 1)}
+              disabled={currentIndex === members.length - 1}
+              aria-label="Next card"
+            >
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Button>
+          )}
+        </div>
         <Button
           type="button"
           variant="outline"
@@ -69,7 +112,7 @@ export function Flashcards() {
         </Button>
       </div>
       <span className="sr-only" role="status" aria-atomic="true">
-        {showName ? "Member name" : "Member photo placeholder"}
+        {`Card ${currentIndex + 1} of ${members.length}. ${showName ? member.name : "Member photo placeholder"}`}
       </span>
     </div>
   );
