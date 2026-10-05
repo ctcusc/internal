@@ -11,8 +11,6 @@ export type Tool = ToolDetails &
     | { status: "coming-soon"; href?: never }
   );
 
-// Register a tool here when its route is ready. Coming-soon entries deliberately
-// have no URL, so the shell never links to an unfinished feature.
 export const tools: readonly Tool[] = [
   {
     id: "flashcards",

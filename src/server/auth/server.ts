@@ -14,8 +14,7 @@ export async function getClubSession() {
   return readSession(cookieStore.get(SESSION_COOKIE)?.value, config);
 }
 
-// Call at every protected page, data read, and mutation. A layout or hidden
-// navigation item is not an authorization boundary.
+// Check each protected page or operation; layouts do not enforce authorization.
 export async function requireClubSession(returnTo = "/") {
   const session = await getClubSession();
   if (!session) {

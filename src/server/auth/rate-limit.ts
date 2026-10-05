@@ -3,8 +3,6 @@ import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { headers } from "next/headers";
 
-// Local development only. Production uses the Worker binding, which survives
-// individual application instances and does not require a database.
 let localWindow = { startedAt: 0, attempts: 0 };
 
 export async function checkLoginRateLimit(): Promise<

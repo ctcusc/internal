@@ -4,7 +4,7 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
-    // Builds need no secrets. Missing runtime secrets leave access disabled.
+    // Optional during builds; required for sign-in.
     SITE_PASSWORD: z.string().min(12).max(1024).optional(),
     SESSION_SECRET: z.string().min(32).optional(),
   },

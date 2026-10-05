@@ -10,8 +10,7 @@ export const SESSION_SECONDS = 8 * 60 * 60;
 const audience = "ctc-internal";
 
 function signingKey(config: AuthConfig) {
-  // Rotating either secret invalidates existing sessions. Knowing the club
-  // password alone never allows a visitor to sign their own session.
+  // Include the club password so rotating either secret invalidates sessions.
   return createHmac("sha256", config.sessionSecret)
     .update("ctc-internal-session-v1\0")
     .update(config.sitePassword)
