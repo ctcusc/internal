@@ -43,7 +43,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
     concurrency:
       group: preview-${{ github.event.pull_request.number }}
       cancel-in-progress: false
@@ -80,6 +80,7 @@ jobs:
           PREVIEW_BUILD: "true"
         run: pnpm build:cloudflare
       - name: Deploy preview
+        id: deployment
         if: steps.pr.outputs.deploy == 'true'
         env:
           WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview.ndjson
@@ -105,4 +106,38 @@ jobs:
             (map(select(. == $preferred_url))[0] // .[0]) //
             error("No preview URL returned; enable Preview URLs on ctc-internal")
           ' "$WRANGLER_OUTPUT_FILE_PATH")
+          fallback_url=$(jq -sr '
+            map(select(.type == "preview")) | last | .preview_urls // [] |
+            map(select(endswith(".workers.dev")))[0] // empty
+          ' "$WRANGLER_OUTPUT_FILE_PATH")
+          echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+          echo "fallback_url=$fallback_url" >> "$GITHUB_OUTPUT"
           echo "[Preview for PR #$PR_NUMBER]($preview_url)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Update preview comment
+        if: steps.pr.outputs.deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_URL: ${{ steps.deployment.outputs.url }}
+          FALLBACK_URL: ${{ steps.deployment.outputs.fallback_url }}
+        run: |
+          current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.state + " " + .head.sha')
+          [[ "$current" == "open $PR_HEAD_SHA" ]] || exit 0
+          comment="$RUNNER_TEMP/preview-comment.md"
+          {
+            printf '<!-- ctc-preview -->\n\n[Preview](%s)' "$PREVIEW_URL"
+            if [[ -n "$FALLBACK_URL" && "$FALLBACK_URL" != "$PREVIEW_URL" ]]; then
+              printf ' · [Fallback](%s)' "$FALLBACK_URL"
+            fi
+            printf '\n\nCommit [%s](%s/%s/commit/%s) · [Logs](%s/%s/actions/runs/%s)\n' \
+              "${PR_HEAD_SHA:0:7}" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$PR_HEAD_SHA" \
+              "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+          } > "$comment"
+          payload="$RUNNER_TEMP/preview-comment.json"
+          jq -n --rawfile body "$comment" '{body: $body}' > "$payload"
+          comment_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and ((.body // "") | startswith("<!-- ctc-preview -->"))) | .id' | tail -n 1)
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" --input "$payload" --silent
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --input "$payload" --silent
+          fi
