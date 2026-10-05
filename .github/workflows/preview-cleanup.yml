@@ -1,0 +1,30 @@
+name: Preview cleanup
+on:
+  pull_request_target:
+    types: [closed]
+permissions: {}
+jobs:
+  cleanup:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Delete preview
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          : "${CLOUDFLARE_ACCOUNT_ID:?Set CLOUDFLARE_ACCOUNT_ID}"
+          : "${CLOUDFLARE_API_TOKEN:?Set CLOUDFLARE_API_TOKEN}"
+          response="$RUNNER_TEMP/preview-cleanup.json"
+          status=$(curl --silent --show-error --max-time 60 --output "$response" --write-out '%{http_code}' \
+            --request DELETE --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/workers/ctc-internal/previews/pr-$PR_NUMBER")
+          if [[ "$status" == "404" ]]; then
+            exit 0
+          fi
+          [[ "$status" == "200" ]] && jq -e '.success == true' "$response"

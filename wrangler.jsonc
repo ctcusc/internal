@@ -18,5 +18,17 @@
   "observability": { "enabled": true },
   "secrets": { "required": ["SITE_PASSWORD", "SESSION_SECRET"] },
   "workers_dev": true,
-  "preview_urls": false,
+  "preview_urls": true,
+  "previews": {
+    // Service bindings in native previews resolve to production deployments.
+    "services": [],
+    "ratelimits": [
+      {
+        "name": "LOGIN_RATE_LIMITER",
+        "namespace_id": "1001002",
+        "simple": { "limit": 10, "period": 60 },
+      },
+    ],
+    "observability": { "enabled": true },
+  },
 }
