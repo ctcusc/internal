@@ -39,7 +39,7 @@ export function PasswordForm({ returnTo }: { returnTo: string }) {
             type="button"
             variant="ghost"
             size="icon"
-            className="text-muted-foreground absolute top-0.5 right-0.5 size-10"
+            className="text-muted-foreground absolute top-0.5 right-0.5"
             aria-label={visible ? "Hide password" : "Show password"}
             aria-pressed={visible}
             onClick={() => setVisible(!visible)}
@@ -57,7 +57,7 @@ export function PasswordForm({ returnTo }: { returnTo: string }) {
           <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       ) : null}
-      <Button type="submit" disabled={pending} className="h-11 w-full text-sm">
+      <Button type="submit" size="lg" disabled={pending} className="w-full">
         {pending ? "Signing in…" : "Sign in"}
         {pending ? (
           <LoaderCircle className="animate-spin" aria-hidden="true" />

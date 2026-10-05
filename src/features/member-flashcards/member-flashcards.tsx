@@ -14,18 +14,17 @@ export function MemberFlashcards() {
 
   return (
     <div>
-      <button
+      <Button
         type="button"
+        variant="unstyled"
+        size="custom"
         onClick={flip}
         aria-label={
           showName
             ? "Member name. Show photo"
             : "Member photo placeholder. Show name"
         }
-        className={cn(
-          styles.card,
-          "group block w-full cursor-pointer rounded-2xl text-left",
-        )}
+        className={cn(styles.card, "group block w-full rounded-2xl text-left")}
       >
         <span className={cn(styles.faces, showName && styles.flipped)}>
           <span
@@ -55,13 +54,14 @@ export function MemberFlashcards() {
             </span>
           </span>
         </span>
-      </button>
+      </Button>
       <div className="mt-5 flex items-center justify-between gap-4">
         <span className="text-muted-foreground text-xs">Sample card</span>
         <Button
           type="button"
           variant="outline"
-          className="bg-card h-11 gap-2 rounded-full px-5"
+          size="lg"
+          className="bg-card rounded-full"
           onClick={flip}
         >
           <RotateCw className="size-4" aria-hidden="true" />

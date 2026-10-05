@@ -29,7 +29,7 @@ export function DashboardShell({
             <Button
               type="submit"
               variant="ghost"
-              className="text-muted-foreground h-10 text-sm"
+              className="text-muted-foreground"
             >
               Sign out
             </Button>
@@ -46,7 +46,7 @@ export function DashboardShell({
       >
         <div className="mb-6 flex items-center gap-3">
           {backLink ? (
-            <Button asChild variant="ghost" className="-ml-2 size-9 p-0">
+            <Button asChild variant="ghost" size="icon-sm" className="-ml-2">
               <Link href={backLink.href} aria-label={backLink.label}>
                 <ArrowLeft className="size-5" aria-hidden="true" />
               </Link>
