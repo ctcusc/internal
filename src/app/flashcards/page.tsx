@@ -11,7 +11,11 @@ export default async function MemberFlashcardsPage() {
   await requireClubSession("/flashcards");
 
   return (
-    <DashboardShell title="Member flashcards">
+    <DashboardShell
+      title="Member flashcards"
+      backLink={{ href: "/", label: "Back to tools" }}
+      contentClassName="max-w-3xl"
+    >
       <MemberFlashcards />
     </DashboardShell>
   );

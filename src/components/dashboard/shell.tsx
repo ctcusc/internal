@@ -1,16 +1,22 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { signOut } from "@/server/auth/actions";
 import { Navigation } from "./navigation";
 
 export function DashboardShell({
   children,
   title,
+  backLink,
+  contentClassName,
 }: {
   children: React.ReactNode;
   title: string;
+  backLink?: { href: string; label: string };
+  contentClassName?: string;
 }) {
   return (
     <div className="min-h-svh">
@@ -33,9 +39,21 @@ export function DashboardShell({
       </header>
       <main
         id="main-content"
-        className="mx-auto max-w-4xl px-6 py-10 sm:px-8 sm:py-12"
+        className={cn(
+          "mx-auto max-w-4xl px-6 py-10 sm:px-8 sm:py-12",
+          contentClassName,
+        )}
       >
-        <h1 className="mb-6 text-2xl font-bold tracking-tight">{title}</h1>
+        <div className="mb-6 flex items-center gap-3">
+          {backLink ? (
+            <Button asChild variant="ghost" className="-ml-2 size-9 p-0">
+              <Link href={backLink.href} aria-label={backLink.label}>
+                <ArrowLeft className="size-5" aria-hidden="true" />
+              </Link>
+            </Button>
+          ) : null}
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        </div>
         {children}
       </main>
     </div>
