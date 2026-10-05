@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, RotateCw, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import styles from "./flashcards.module.css";
 export function Flashcards({ members }: { members: readonly Member[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showName, setShowName] = useState(false);
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const member = members[currentIndex];
   const flip = () => setShowName((current) => !current);
   const changeCard = (index: number) => {
@@ -23,6 +25,9 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
     return <p className="text-muted-foreground text-sm">No members yet.</p>;
   }
 
+  const photo = member.photo === failedPhoto ? null : member.photo;
+  const photoLabel = photo ? "Member photo" : "Member photo placeholder";
+
   return (
     <div>
       <Button
@@ -32,9 +37,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         size="custom"
         onClick={flip}
         aria-label={
-          showName
-            ? `${member.name}. Show photo`
-            : "Member photo placeholder. Show name"
+          showName ? `${member.name}. Show photo` : `${photoLabel}. Show name`
         }
         className={cn(styles.card, "group block w-full rounded-2xl text-left")}
       >
@@ -43,15 +46,31 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
             aria-hidden={showName}
             className={cn(
               styles.face,
-              "border-border bg-muted flex flex-col items-center justify-center gap-5 rounded-2xl border p-6 shadow-sm transition-shadow group-hover:shadow-md",
+              "border-border bg-muted flex flex-col items-center justify-center gap-5 overflow-hidden rounded-2xl border p-6 shadow-sm transition-shadow group-hover:shadow-md",
             )}
           >
-            <UserRound
-              className="text-primary/40 size-16"
-              strokeWidth={1}
-              aria-hidden="true"
-            />
-            <span className="text-muted-foreground text-sm">Member photo</span>
+            {photo ? (
+              <Image
+                src={photo}
+                alt="Member photo"
+                fill
+                sizes="(max-width: 768px) 100vw, 720px"
+                className="object-cover object-top"
+                unoptimized
+                onError={() => setFailedPhoto(photo)}
+              />
+            ) : (
+              <>
+                <UserRound
+                  className="text-primary/40 size-16"
+                  strokeWidth={1}
+                  aria-hidden="true"
+                />
+                <span className="text-muted-foreground text-sm">
+                  Member photo
+                </span>
+              </>
+            )}
           </span>
           <span
             aria-hidden={!showName}
@@ -112,7 +131,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         </Button>
       </div>
       <span className="sr-only" role="status" aria-atomic="true">
-        {`Card ${currentIndex + 1} of ${members.length}. ${showName ? member.name : "Member photo placeholder"}`}
+        {`Card ${currentIndex + 1} of ${members.length}. ${showName ? member.name : photoLabel}`}
       </span>
     </div>
   );
