@@ -10,6 +10,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+      deployments: write
       pull-requests: write
     concurrency:
       group: preview-${{ github.event.pull_request.number }}
@@ -28,6 +29,26 @@ jobs:
           if [[ "$current" == "open $PR_HEAD_SHA" ]]; then
             echo "deploy=true" >> "$GITHUB_OUTPUT"
           fi
+      - name: Create GitHub deployment
+        id: github_deployment
+        if: steps.pr.outputs.deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          payload="$RUNNER_TEMP/deployment.json"
+          jq -n '{
+            ref: env.PR_HEAD_SHA,
+            environment: ("pr-" + env.PR_NUMBER),
+            auto_merge: false,
+            required_contexts: [],
+            transient_environment: true,
+            production_environment: false
+          }' > "$payload"
+          deployment_id=$(gh api --method POST "repos/$GITHUB_REPOSITORY/deployments" --input "$payload" --jq '.id')
+          echo "id=$deployment_id" >> "$GITHUB_OUTPUT"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" \
+            -f state=in_progress -f description="Building preview" \
+            -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --silent
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         if: steps.pr.outputs.deploy == 'true'
         with:
@@ -80,6 +101,49 @@ jobs:
           echo "url=$preview_url" >> "$GITHUB_OUTPUT"
           echo "fallback_url=$fallback_url" >> "$GITHUB_OUTPUT"
           echo "[Preview for PR #$PR_NUMBER]($preview_url)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Update GitHub deployment
+        if: always() && steps.github_deployment.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOYMENT_ID: ${{ steps.github_deployment.outputs.id }}
+          DEPLOY_OUTCOME: ${{ steps.deployment.outcome }}
+          RUN_CANCELLED: ${{ cancelled() }}
+          PREVIEW_URL: ${{ steps.deployment.outputs.url }}
+        run: |
+          state=failure
+          description="Preview failed"
+          if [[ "$RUN_CANCELLED" == "true" ]]; then
+            state=inactive
+            description="Preview cancelled"
+          elif [[ "$DEPLOY_OUTCOME" == "success" ]]; then
+            current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.state + " " + .head.sha')
+            if [[ "$current" == "open $PR_HEAD_SHA" ]]; then
+              state=success
+              description="Preview ready"
+            else
+              state=inactive
+              description="PR closed or updated"
+            fi
+          fi
+          payload="$RUNNER_TEMP/deployment-status.json"
+          jq -n --arg state "$state" --arg description "$description" '{
+            state: $state,
+            description: $description,
+            log_url: (env.GITHUB_SERVER_URL + "/" + env.GITHUB_REPOSITORY + "/actions/runs/" + env.GITHUB_RUN_ID),
+            environment_url: (if $state == "success" then env.PREVIEW_URL else "" end),
+            auto_inactive: false
+          }' > "$payload"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$DEPLOYMENT_ID/statuses" --input "$payload" --silent
+          if [[ "$state" == "success" ]]; then
+            deployment_ids=$(gh api --paginate "repos/$GITHUB_REPOSITORY/deployments?environment=pr-$PR_NUMBER&per_page=100" --jq '.[].id')
+            while read -r previous_id; do
+              [[ -n "$previous_id" && "$previous_id" -lt "$DEPLOYMENT_ID" ]] || continue
+              previous_state=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$previous_id/statuses?per_page=1" --jq '.[0].state')
+              [[ "$previous_state" != "inactive" ]] || continue
+              gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$previous_id/statuses" \
+                -f state=inactive -f description="Replaced by a newer preview" -F auto_inactive=false --silent
+            done <<< "$deployment_ids"
+          fi
       - name: Update preview comment
         if: steps.pr.outputs.deploy == 'true'
         env:

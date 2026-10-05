@@ -6,6 +6,8 @@ permissions: {}
 jobs:
   cleanup:
     if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      deployments: write
     runs-on: ubuntu-latest
     timeout-minutes: 5
     concurrency:
@@ -28,3 +30,16 @@ jobs:
             exit 0
           fi
           [[ "$status" == "200" ]] && jq -e '.success == true' "$response"
+      - name: Retire GitHub deployments
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          deployment_ids=$(gh api --paginate "repos/$GITHUB_REPOSITORY/deployments?environment=pr-$PR_NUMBER&per_page=100" --jq '.[].id')
+          while read -r deployment_id; do
+            [[ -n "$deployment_id" ]] || continue
+            state=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses?per_page=1" --jq '.[0].state')
+            [[ "$state" != "inactive" ]] || continue
+            gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" \
+              -f state=inactive -f description="PR closed" -F auto_inactive=false --silent
+          done <<< "$deployment_ids"

@@ -30,6 +30,6 @@ Pushes to `main`, including merged PRs, deploy to `internal.ctcusc.com` after ch
 
 ## PR previews
 
-Same-repo PRs build and deploy to `pr-<number>.internal.ctcusc.com` independently of CI checks. A bot comment links to the preview and updates after each deployment. The URL also appears in the **Preview** workflow summary. Closing the PR deletes its preview.
+Same-repo PRs build and deploy to `pr-<number>.internal.ctcusc.com` independently of CI checks. Find the preview in the PR's deployment status, updated bot comment, or **Preview** workflow summary. Closing the PR deletes its preview and marks its deployments inactive.
 
 Production and previews share four GitHub Actions secrets: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SITE_PASSWORD` (12+ characters), and `SESSION_SECRET` (32+ characters). The first production deployment registers the custom domain for production and previews. Previews use `workers.dev` until the custom domain is active.
