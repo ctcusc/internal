@@ -7,7 +7,7 @@ type ToolDetails = {
 
 export type Tool = ToolDetails &
   (
-    | { status: "available"; href: `/tools/${string}` }
+    | { status: "available"; href: `/${string}` }
     | { status: "coming-soon"; href?: never }
   );
 
@@ -15,9 +15,10 @@ export type Tool = ToolDetails &
 // have no URL, so the shell never links to an unfinished feature.
 export const tools: readonly Tool[] = [
   {
-    id: "learn-names",
-    name: "Learn member names",
+    id: "member-flashcards",
+    name: "Member flashcards",
     icon: "people",
-    status: "coming-soon",
+    status: "available",
+    href: "/flashcards",
   },
 ];
