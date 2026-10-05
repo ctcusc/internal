@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 
 import { DashboardShell } from "@/components/dashboard/shell";
-import { MemberFlashcards } from "@/features/member-flashcards/member-flashcards";
+import { Flashcards } from "@/features/flashcards/flashcards";
 import { requireClubSession } from "@/server/auth/server";
 
-export const metadata: Metadata = { title: "Member flashcards" };
+export const metadata: Metadata = { title: "Flashcards" };
 export const dynamic = "force-dynamic";
 
-export default async function MemberFlashcardsPage() {
+export default async function FlashcardsPage() {
   await requireClubSession("/flashcards");
 
   return (
     <DashboardShell
-      title="Member flashcards"
+      title="Flashcards"
       backLink={{ href: "/", label: "Back to tools" }}
       contentClassName="max-w-3xl"
     >
-      <MemberFlashcards />
+      <Flashcards />
     </DashboardShell>
   );
 }

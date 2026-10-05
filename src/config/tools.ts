@@ -15,8 +15,8 @@ export type Tool = ToolDetails &
 // have no URL, so the shell never links to an unfinished feature.
 export const tools: readonly Tool[] = [
   {
-    id: "member-flashcards",
-    name: "Member flashcards",
+    id: "flashcards",
+    name: "Flashcards",
     icon: "people",
     status: "available",
     href: "/flashcards",

@@ -1,6 +1,6 @@
 # CTC Internal
 
-The shared workspace for Code the Change at USC. One Next.js app hosts the dashboard and club tools, with shared-password access, a responsive shadcn/ui shell, and a tool registry. Member flashcards has a sample card with photo/name placeholders and a reveal toggle. No database, roster, or learning progress is implemented.
+The shared workspace for Code the Change at USC. One Next.js app hosts the dashboard and club tools, with shared-password access, a responsive shadcn/ui shell, and a tool registry. Flashcards has a sample card with photo/name placeholders and a reveal toggle. No database, roster, or learning progress is implemented.
 
 ## Local development
 
@@ -37,7 +37,7 @@ Both the password screen and dashboard live at `/`. Missing secrets show an unav
 - `src/config/tools.ts`: typed tool metadata and availability.
 - `src/server/auth`: server-only password verification, sessions, authorization, and rate limiting.
 - `src/styles/globals.css`: CTC theme tokens.
-- `src/features/member-flashcards`: the sample flashcard; future tools get their own feature folders.
+- `src/features/flashcards`: the sample flashcard; future tools get their own feature folders.
 
 The interface uses CTC's logo and local Alte Haas fonts, shared with the public website. See `src/fonts/README.md` for attribution.
 
@@ -55,7 +55,7 @@ For password rotation, update the secret in the deployed environment and the Git
 
 ## Adding a tool
 
-1. Create its route under `src/app/<slug>/page.tsx` and its feature code under `src/features/<slug>`. Member flashcards lives at `/flashcards`.
+1. Create its route under `src/app/<slug>/page.tsx` and its feature code under `src/features/<slug>`. Flashcards lives at `/flashcards`.
 2. Call `requireClubSession('/<slug>')` before reading or rendering protected information. This redirects visitors to `/?next=...` and restores the destination after sign-in.
 3. Wrap the route content in `DashboardShell`, providing a page title. Keep authentication checks close to protected operations, including Server Actions.
 4. Add an entry to `src/config/tools.ts`. Available tools require an internal URL starting with `/`. Coming-soon tools have no URL. Navigation and the homepage use this registry.

@@ -6,9 +6,9 @@ import { RotateCw, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import styles from "./member-flashcards.module.css";
+import styles from "./flashcards.module.css";
 
-export function MemberFlashcards() {
+export function Flashcards() {
   const [showName, setShowName] = useState(false);
   const flip = () => setShowName((current) => !current);
 
