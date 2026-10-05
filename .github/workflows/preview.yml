@@ -89,6 +89,7 @@ jobs:
           pnpm exec wrangler preview --config wrangler.jsonc --worker-name ctc-internal \
             --name "pr-$PR_NUMBER" --tag "$PR_HEAD_SHA" --ignore-base-config \
             --secrets-file "$preview_secrets"
+          deployed_at=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           preview_url=$(jq -ser --arg preferred_url "https://pr-$PR_NUMBER.internal.ctcusc.com" '
             map(select(.type == "preview")) | last | .preview_urls // [] |
             (map(select(. == $preferred_url))[0] // .[0]) //
@@ -100,6 +101,7 @@ jobs:
           ' "$WRANGLER_OUTPUT_FILE_PATH")
           echo "url=$preview_url" >> "$GITHUB_OUTPUT"
           echo "fallback_url=$fallback_url" >> "$GITHUB_OUTPUT"
+          echo "deployed_at=$deployed_at" >> "$GITHUB_OUTPUT"
           echo "[Preview for PR #$PR_NUMBER]($preview_url)" >> "$GITHUB_STEP_SUMMARY"
       - name: Update GitHub deployment
         if: always() && steps.github_deployment.outputs.id != ''
@@ -150,12 +152,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PREVIEW_URL: ${{ steps.deployment.outputs.url }}
           FALLBACK_URL: ${{ steps.deployment.outputs.fallback_url }}
+          DEPLOYED_AT: ${{ steps.deployment.outputs.deployed_at }}
         run: |
           current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.state + " " + .head.sha')
           [[ "$current" == "open $PR_HEAD_SHA" ]] || exit 0
           comment="$RUNNER_TEMP/preview-comment.md"
           {
             printf '<!-- ctc-preview -->\n\n### Preview deployment\n\n**[Open preview ↗](%s)**\n\n' "$PREVIEW_URL"
+            printf 'Last deployed <relative-time datetime="%s">%s</relative-time>\n\n' "$DEPLOYED_AT" "$DEPLOYED_AT"
             printf '| Commit | Workflow |\n| --- | --- |\n'
             printf '| [`%s`](%s/%s/commit/%s) | [Run #%s · attempt %s](%s/%s/actions/runs/%s) |\n' \
               "${PR_HEAD_SHA:0:7}" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$PR_HEAD_SHA" \
