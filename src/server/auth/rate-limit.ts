@@ -14,7 +14,7 @@ export async function checkLoginRateLimit(): Promise<
       localWindow = { startedAt: now, attempts: 0 };
     }
     localWindow.attempts += 1;
-    return localWindow.attempts <= 10 ? "allowed" : "limited";
+    return localWindow.attempts <= 100 ? "allowed" : "limited";
   }
 
   try {
