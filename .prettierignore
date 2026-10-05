@@ -1,0 +1,9 @@
+node_modules
+.next
+.open-next
+.wrangler
+pnpm-lock.yaml
+public
+src/fonts/*.ttf
+coverage
+next-env.d.ts
