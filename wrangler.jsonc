@@ -19,6 +19,13 @@
   "secrets": { "required": ["SITE_PASSWORD", "SESSION_SECRET"] },
   "workers_dev": true,
   "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "internal.ctcusc.com",
+      "custom_domain": true,
+      "previews_enabled": true,
+    },
+  ],
   "previews": {
     // Service bindings in native previews resolve to production deployments.
     "services": [],

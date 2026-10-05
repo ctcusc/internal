@@ -98,5 +98,9 @@ jobs:
           pnpm exec wrangler preview --config wrangler.jsonc --worker-name ctc-internal \
             --name "pr-$PR_NUMBER" --tag "$PR_HEAD_SHA" --ignore-base-config \
             --secrets-file "$preview_secrets"
-          preview_url=$(jq -ser 'map(select(.type == "preview")) | last | .preview_urls[0] // error("No preview URL returned; enable Preview URLs on ctc-internal")' "$WRANGLER_OUTPUT_FILE_PATH")
+          preview_url=$(jq -ser --arg preferred_url "https://pr-$PR_NUMBER.internal.ctcusc.com" '
+            map(select(.type == "preview")) | last | .preview_urls // [] |
+            (map(select(. == $preferred_url))[0] // .[0]) //
+            error("No preview URL returned; enable Preview URLs on ctc-internal")
+          ' "$WRANGLER_OUTPUT_FILE_PATH")
           echo "[Preview for PR #$PR_NUMBER]($preview_url)" >> "$GITHUB_STEP_SUMMARY"
