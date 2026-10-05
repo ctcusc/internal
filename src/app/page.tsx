@@ -23,7 +23,7 @@ export default async function HomePage({
   return (
     <DashboardShell title="Tools">
       {tools.length ? (
-        <div className="grid gap-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {tools.map((tool) => (
             <ToolCard key={tool.id} tool={tool} />
           ))}

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export function Navigation() {
   const pathname = usePathname();
   const available = tools.filter((tool) => tool.status === "available");
-  if (!available.length) return null;
+  if (available.length < 2) return null;
 
   const links = [{ id: "home", name: "Tools", href: "/" }, ...available];
   return (
