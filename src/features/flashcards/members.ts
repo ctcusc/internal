@@ -1,4 +1,5 @@
 import "server-only";
+import ruinaPhoto from "./ruina-photo.png";
 
 export type Member = {
   id: string;
@@ -8,8 +9,8 @@ export type Member = {
 
 export const members: readonly Member[] = [
   {
-    id: "sample-member",
-    name: "Member name",
-    photo: null,
+    id: "ruina-liu",
+    name: "Ruina Liu",
+    photo: ruinaPhoto,
   },
 ];
