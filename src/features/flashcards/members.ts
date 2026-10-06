@@ -31,7 +31,7 @@ export const members: readonly Member[] = [
     id: "rohan-george",
     name: "Rohan George",
     photo: "/members/rohan-george.jpg",
-  }, 
+  },
   {
     id: "dale-dai",
     name: "Dale Dai",
