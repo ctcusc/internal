@@ -13,6 +13,11 @@ export const members: readonly Member[] = [
     photo: "/members/Chris_Tutor_Photo.jpg",
   },
   {
+    id: "joshua-zhang",
+    name: "Joshua Zhang",
+    photo: "/members/joshua.jpeg",
+  },
+  {
     id: "rachel-he",
     name: "Rachel He",
     photo: "/members/rachelhe.JPG",
@@ -33,8 +38,18 @@ export const members: readonly Member[] = [
     photo: "/members/brennen-ho.jpg",
   },
   {
+    id: "rohan-george",
+    name: "Rohan George",
+    photo: "/members/rohan-george.jpg",
+  },
+  {
     id: "dale-dai",
     name: "Dale Dai",
     photo: "/members/dale-dai.png",
+  },
+  {
+    id: "darren-shen",
+    name: "Darren Shen",
+    photo: "/members/darren-shen.jpg",
   },
 ];
