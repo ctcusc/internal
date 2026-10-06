@@ -80,15 +80,8 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
               "bg-primary text-primary-foreground flex items-center justify-center rounded-2xl border border-transparent p-8 text-center shadow-sm",
             )}
           >
-            <span className="flex flex-col items-center gap-2">
-              <span className="text-3xl font-bold tracking-tight sm:text-4xl">
-                {member.name}
-              </span>
-              {member.year && member.major && (
-                <span className="text-primary-foreground/80 text-sm font-medium tracking-wide sm:text-base">
-                  {member.year} · {member.major}
-                </span>
-              )}
+            <span className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {member.name}
             </span>
           </span>
         </span>
