@@ -55,7 +55,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
                 alt="Member photo"
                 fill
                 sizes="(max-width: 768px) 100vw, 720px"
-                className="object-cover object-center"
+                className="object-contain"
                 unoptimized
                 onError={() => setFailedPhoto(photo)}
               />
@@ -84,9 +84,11 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
               <span className="text-3xl font-bold tracking-tight sm:text-4xl">
                 {member.name}
               </span>
-              <span className="text-primary-foreground/80 text-sm font-medium tracking-wide sm:text-base">
-                {member.year} · {member.major}
-              </span>
+              {member.year && member.major && (
+                <span className="text-primary-foreground/80 text-sm font-medium tracking-wide sm:text-base">
+                  {member.year} · {member.major}
+                </span>
+              )}
             </span>
           </span>
         </span>

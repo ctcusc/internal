@@ -3,8 +3,8 @@ import "server-only";
 export type Member = {
   id: string;
   name: string;
-  year: string;
-  major: string;
+  year?: string;
+  major?: string;
   photo: string | null;
 };
 
@@ -17,10 +17,13 @@ export const members: readonly Member[] = [
     photo: "/members/kyle-yuen.jpg",
   },
   {
-    id: "sample-member",
-    name: "Member name",
-    year: "Year",
-    major: "Major",
-    photo: null,
+    id: "gautham-gopinath",
+    name: "Gautham Gopinath",
+    photo: "/members/gautham-gopinath.jpg",
+  },
+  {
+    id: "brennen-ho",
+    name: "Brennen Ho",
+    photo: "/members/brennen-ho.jpg",
   },
 ];
