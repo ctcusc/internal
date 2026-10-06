@@ -33,8 +33,18 @@ export const members: readonly Member[] = [
     photo: "/members/brennen-ho.jpg",
   },
   {
+    id: "rohan-george",
+    name: "Rohan George",
+    photo: "/members/rohan-george.jpg",
+  },
+  {
     id: "dale-dai",
     name: "Dale Dai",
     photo: "/members/dale-dai.png",
+  },
+  {
+    id: "darren-shen",
+    name: "Darren Shen",
+    photo: "/members/darren-shen.jpg",
   },
 ];
