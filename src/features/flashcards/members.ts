@@ -52,4 +52,9 @@ export const members: readonly Member[] = [
     name: "Darren Shen",
     photo: "/members/darren-shen.jpg",
   },
+  {
+    id: "micah-muir",
+    name: "Micah Muir",
+    photo: "/members/micah-muir.jpeg",
+  },
 ];
