@@ -55,8 +55,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
                 alt="Member photo"
                 fill
                 sizes="(max-width: 768px) 100vw, 720px"
-                className="object-cover"
-                style={{ objectPosition: "65% 35%" }}
+                className="object-contain"
                 unoptimized
                 onError={() => setFailedPhoto(photo)}
               />

@@ -8,8 +8,8 @@ export type Member = {
 
 export const members: readonly Member[] = [
   {
-    id: "ctc-13",
+    id: "darren-shen",
     name: "Darren Shen",
-    photo: "/darrens-pic.jpg",
+    photo: "/members/darren-shen.jpg",
   },
 ];
