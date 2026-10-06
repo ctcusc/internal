@@ -12,4 +12,59 @@ export const members: readonly Member[] = [
     name: "Ruina Liu",
     photo: "members/ruina-photo.png",
   },
+  {
+    id: "kyle-yuen",
+    name: "Kyle Yuen",
+    photo: "/members/kyle-yuen.jpg",
+  },
+  {
+    id: "Christopher-Tutor",
+    name: "Christopher Tutor",
+    photo: "/members/Chris_Tutor_Photo.jpg",
+  },
+  {
+    id: "joshua-zhang",
+    name: "Joshua Zhang",
+    photo: "/members/joshua.jpeg",
+  },
+  {
+    id: "rachel-he",
+    name: "Rachel He",
+    photo: "/members/rachelhe.JPG",
+  },
+  {
+    id: "connor-mao",
+    name: "Connor Mao",
+    photo: "/members/connor-mao.jpeg",
+  },
+  {
+    id: "gautham-gopinath",
+    name: "Gautham Gopinath",
+    photo: "/members/gautham-gopinath.jpg",
+  },
+  {
+    id: "brennen-ho",
+    name: "Brennen Ho",
+    photo: "/members/brennen-ho.jpg",
+  },
+  {
+    id: "rohan-george",
+    name: "Rohan George",
+    photo: "/members/rohan-george.jpg",
+  },
+  {
+    id: "dale-dai",
+    name: "Dale Dai",
+    photo: "/members/dale-dai.png",
+  },
+  {
+    id: "darren-shen",
+    name: "Darren Shen",
+    photo: "/members/darren-shen.jpg",
+  },
+  {
+    id: "marcus-cao",
+    name: "Marcus Cao",
+    photo: "/members/marcus-cao.jpg",
+  },
 ];
