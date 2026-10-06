@@ -6,7 +6,7 @@ export type Member = {
   photo: string | null;
 };
 
-export const members: Member[] = [
+export const members: readonly Member[] = [
   {
     id: "halas-graden",
     name: "Halas Graden",

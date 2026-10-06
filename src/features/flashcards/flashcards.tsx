@@ -25,7 +25,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
     return <p className="text-muted-foreground text-sm">No members yet.</p>;
   }
 
-  const photo = member.photo;
+  const photo = member.photo === failedPhoto ? null : member.photo;
   const photoLabel = photo ? "Member photo" : "Member photo placeholder";
 
   return (
