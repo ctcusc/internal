@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight, RotateCw, UserRound } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import type { Member } from "./members";
 import styles from "./flashcards.module.css";
+import type { Member } from "./members";
 
 export function Flashcards({ members }: { members: readonly Member[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -55,7 +55,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
                 alt="Member photo"
                 fill
                 sizes="(max-width: 768px) 100vw, 720px"
-                className="object-cover object-top"
+                className="object-contain object-center"
                 unoptimized
                 onError={() => setFailedPhoto(photo)}
               />
