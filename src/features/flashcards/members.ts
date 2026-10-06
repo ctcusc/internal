@@ -6,10 +6,10 @@ export type Member = {
   photo: string | null;
 };
 
-export const members: readonly Member[] = [
+export const members: Member[] = [
   {
-    id: "sample-member",
-    name: "Member name",
-    photo: null,
+    id: "halas-graden",
+    name: "Halas Graden",
+    photo: "members/profile_headshot.jpg",
   },
 ];
