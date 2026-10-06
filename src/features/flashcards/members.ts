@@ -10,6 +10,6 @@ export const members: readonly Member[] = [
   {
     id: "Christopher-Tutor",
     name: "Christopher Tutor",
-    photo: "/PHOTO.jpg",
+    photo: "/members/Chris_Tutor_Photo.jpg",
   },
 ];
