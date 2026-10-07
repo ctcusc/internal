@@ -55,7 +55,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
                 alt="Member photo"
                 fill
                 sizes="(max-width: 768px) 100vw, 720px"
-                className="object-cover object-top"
+                className="object-contain object-center"
                 unoptimized
                 onError={() => setFailedPhoto(photo)}
               />
@@ -80,12 +80,8 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
               "bg-primary text-primary-foreground flex items-center justify-center rounded-2xl border border-transparent p-8 text-center shadow-sm",
             )}
           >
-            <span className="flex flex-col items-center gap-3">
-              <span className="text-3xl font-bold tracking-tight sm:text-4xl">
-                {member.name}
-              </span>
-              <span className="text-lg">{member.year}</span>
-              <span className="text-lg">{member.major}</span>
+            <span className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {member.name}
             </span>
           </span>
         </span>
