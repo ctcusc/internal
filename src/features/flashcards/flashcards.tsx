@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { preload } from "react-dom";
 
 import { Button } from "@/components/ui/button";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
 import styles from "./flashcards.module.css";
@@ -197,9 +198,27 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
           {showName ? "Show photo" : "Show name"}
         </Button>
       </div>
-      <p className="text-muted-foreground mt-4 hidden text-center text-xs sm:block">
-        ← → move · ↑ ↓ / Space flip
-      </p>
+      <div
+        role="group"
+        aria-label="Keyboard shortcuts"
+        className="text-muted-foreground mt-6 hidden items-center justify-center gap-6 text-xs sm:flex"
+      >
+        <div className="flex items-center gap-2">
+          <KbdGroup>
+            <Kbd>←</Kbd>
+            <Kbd>→</Kbd>
+          </KbdGroup>
+          <span>Move</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <KbdGroup>
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd>
+            <Kbd className="px-2">Space</Kbd>
+          </KbdGroup>
+          <span>Flip</span>
+        </div>
+      </div>
       <span className="sr-only" role="status" aria-atomic="true">
         {`Card ${currentIndex + 1} of ${members.length}. ${showName ? member.name : photoLabel}`}
       </span>
