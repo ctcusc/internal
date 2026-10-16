@@ -30,7 +30,6 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
 
       if (
         event.defaultPrevented ||
-        event.repeat ||
         event.isComposing ||
         event.altKey ||
         event.ctrlKey ||
@@ -43,22 +42,30 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         return;
       }
 
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        event.preventDefault();
+      const isNavigationKey =
+        event.key === "ArrowLeft" || event.key === "ArrowRight";
+      const isFlipKey =
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
+        (event.key === " " &&
+          !(
+            target instanceof HTMLElement &&
+            target.closest("button, a[href], [role='button']")
+          ));
+
+      if (!isNavigationKey && !isFlipKey) return;
+
+      event.preventDefault();
+      if (event.repeat) return;
+
+      if (isNavigationKey) {
         const nextIndex = currentIndex + (event.key === "ArrowRight" ? 1 : -1);
 
         if (nextIndex >= 0 && nextIndex < members.length) {
           setCurrentIndex(nextIndex);
           setShowName(false);
         }
-      } else if (
-        event.key === " " &&
-        !(
-          target instanceof HTMLElement &&
-          target.closest("button, a[href], [role='button']")
-        )
-      ) {
-        event.preventDefault();
+      } else {
         setShowName((current) => !current);
       }
     };
@@ -89,7 +96,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         aria-label={
           showName ? `${member.name}. Show photo` : `${photoLabel}. Show name`
         }
-        aria-keyshortcuts="Space Enter"
+        aria-keyshortcuts="ArrowUp ArrowDown Space Enter"
         className={cn(styles.card, "group block w-full rounded-2xl text-left")}
       >
         <span
@@ -191,7 +198,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         </Button>
       </div>
       <p className="text-muted-foreground mt-4 hidden text-center text-xs sm:block">
-        ← → move · Space flip
+        ← → move · ↑ ↓ / Space flip
       </p>
       <span className="sr-only" role="status" aria-atomic="true">
         {`Card ${currentIndex + 1} of ${members.length}. ${showName ? member.name : photoLabel}`}
