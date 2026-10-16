@@ -38,6 +38,11 @@ export const members: readonly Member[] = [
     photo: "/members/joshua.jpeg",
   },
   {
+    id: "6506829008",
+    name: "Siddharth Yelisetty",
+    photo: "/Siddharth_Yelisetty.jpeg",
+  },
+  {
     id: "rachel-he",
     name: "Rachel He",
     photo: "/members/rachelhe.JPG",
