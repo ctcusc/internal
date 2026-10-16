@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, RotateCw, UserRound } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { preload } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,11 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
 
   const photo = member.photo === failedPhoto ? null : member.photo;
   const photoLabel = photo ? "Member photo" : "Member photo placeholder";
+  const nextPhoto = members[currentIndex + 1]?.photo;
+
+  if (nextPhoto) {
+    preload(nextPhoto, { as: "image", fetchPriority: "low" });
+  }
 
   return (
     <div>
@@ -57,6 +63,8 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
                 sizes="(max-width: 768px) 100vw, 720px"
                 className="object-contain object-center"
                 unoptimized
+                priority
+                fetchPriority="high"
                 onError={() => setFailedPhoto(photo)}
               />
             ) : (
