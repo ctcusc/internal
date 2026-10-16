@@ -11,6 +11,8 @@ it("uses unique member IDs", () => {
 it.each(members)("has valid details and a local photo for $id", (member) => {
   expect(member.id.trim()).not.toBe("");
   expect(member.name.trim()).not.toBe("");
+  expect(member.year.trim()).not.toBe("");
+  expect(member.role.trim()).not.toBe("");
 
   if (member.photo === null) return;
 

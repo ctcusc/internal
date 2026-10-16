@@ -81,6 +81,8 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
 
   const photo = member.photo === failedPhoto ? null : member.photo;
   const photoLabel = photo ? "Member photo" : "Member photo placeholder";
+  const memberDetails = [member.year, member.role];
+  const memberLabel = [member.name, ...memberDetails].join(". ");
   const nextPhoto = members[currentIndex + 1]?.photo;
 
   if (nextPhoto) {
@@ -95,7 +97,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         size="custom"
         onClick={flip}
         aria-label={
-          showName ? `${member.name}. Show photo` : `${photoLabel}. Show name`
+          showName ? `${memberLabel}. Show photo` : `${photoLabel}. Show name`
         }
         aria-keyshortcuts="ArrowUp ArrowDown Space Enter"
         className={cn(styles.card, "group block w-full rounded-2xl text-left")}
@@ -141,11 +143,14 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
             className={cn(
               styles.face,
               styles.back,
-              "bg-primary text-primary-foreground flex items-center justify-center rounded-2xl border border-transparent p-8 text-center shadow-sm",
+              "bg-primary text-primary-foreground flex flex-col items-center justify-center gap-3 rounded-2xl border border-transparent p-8 text-center shadow-sm",
             )}
           >
             <span className="text-3xl font-bold tracking-tight sm:text-4xl">
               {member.name}
+            </span>
+            <span className="text-primary-foreground/80 text-sm sm:text-base">
+              {memberDetails.join(" · ")}
             </span>
           </span>
         </span>
@@ -220,7 +225,7 @@ export function Flashcards({ members }: { members: readonly Member[] }) {
         </div>
       </div>
       <span className="sr-only" role="status" aria-atomic="true">
-        {`Card ${currentIndex + 1} of ${members.length}. ${showName ? member.name : photoLabel}`}
+        {`Card ${currentIndex + 1} of ${members.length}. ${showName ? memberLabel : photoLabel}`}
       </span>
     </div>
   );
