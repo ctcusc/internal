@@ -307,7 +307,7 @@ export const members: readonly Member[] = [
     id: "jason-wiemels",
     name: "Jason Wiemels",
     year: "Senior",
-    role: "VP of Product (S27)",
+    role: "Developer",
     photo: "/members/jason-wiemels.webp",
   },
   {
