@@ -8,6 +8,21 @@ export type Member = {
 
 export const members: readonly Member[] = [
   {
+    id: "shin-masada",
+    name: "Shin Masada",
+    photo: "/members/shin-masada.png",
+  },
+  {
+    id: "ruina-liu",
+    name: "Ruina Liu",
+    photo: "members/ruina-photo.png",
+  },
+  {
+    id: "kyle-yuen",
+    name: "Kyle Yuen",
+    photo: "/members/kyle-yuen.jpg",
+  },
+  {
     id: "Christopher-Tutor",
     name: "Christopher Tutor",
     photo: "/members/Chris_Tutor_Photo.jpg",
@@ -51,6 +66,11 @@ export const members: readonly Member[] = [
     id: "darren-shen",
     name: "Darren Shen",
     photo: "/members/darren-shen.jpg",
+  },
+  {
+    id: "marcus-cao",
+    name: "Marcus Cao",
+    photo: "/members/marcus-cao.jpg",
   },
   {
     id: "micah-muir",
