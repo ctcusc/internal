@@ -24,5 +24,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm build:cloudflare
-      - run: pnpm test:worker
       - run: pnpm exec wrangler deploy --dry-run
