@@ -1,4 +1,7 @@
 import "./src/env.js";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+initOpenNextCloudflareForDev();
 
 const isPreviewBuild = process.env.PREVIEW_BUILD === "true";
 
