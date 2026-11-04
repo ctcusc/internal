@@ -37,8 +37,14 @@
   "previews": {
     // Service bindings in native previews resolve to production deployments.
     "services": [],
-    // Add a dedicated preview database before enabling data features in previews.
-    "d1_databases": [],
+    // All PR previews share test data in this database, never production D1.
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "ctc-internal-preview",
+        "database_id": "5bb7c7b4-c5eb-440b-b358-54f30ef71850",
+      },
+    ],
     "ratelimits": [
       {
         "name": "LOGIN_RATE_LIMITER",

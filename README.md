@@ -58,9 +58,12 @@ pnpm db:migrate:remote
 
 The production deployment workflow applies migrations before deploying, using the
 existing Cloudflare account/token secrets. That token needs D1 edit access.
-PR previews intentionally have no D1 binding; add a separate preview database and
-apply its migrations before testing data features there. Do not bind previews to
-production attendance data.
+PR previews bind `DB` to the separate `ctc-internal-preview` D1 database. The
+Preview workflow applies migrations there before deploying each PR. All PR
+previews share this database, so use test data only; closing a PR does not delete
+its rows. Production uses `ctc-internal` and is never a preview binding. To
+apply preview migrations manually, use `pnpm db:migrate:preview` with credentials
+for the CTC Cloudflare account.
 
 ### Tables
 
