@@ -1,3 +1,7 @@
 # Local Cloudflare preview: copy to .dev.vars.
 SITE_PASSWORD=
 SESSION_SECRET=
+# Reserved for the Google sign-in integration (not yet implemented).
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
