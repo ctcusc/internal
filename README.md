@@ -68,8 +68,10 @@ for the CTC Cloudflare account.
 ### Tables
 
 - `short_links`: `code` (primary key), `url`, optional `title`, `created_at`.
-  A code must be supplied by the developer's app. QR codes can encode the eventual
-  short URL; image generation and storage are left to the project.
+  Omit `code` and the server generates a 7-character lowercase code, retrying a
+  rare collision up to 5 times without overwriting an existing link. Supplying a
+  `code` keeps the old behavior: 409 if it is taken. QR codes can encode the
+  eventual short URL; image generation and storage are left to the project.
 - `attendance_events`: `id` (UUID), `name`, `starts_at` (UTC), optional `location`,
   `created_at`.
 - `attendance_check_ins`: `event_id` (foreign key), `email`, `name`, `checked_in_at`.
@@ -86,7 +88,7 @@ individual identity verification or per-role authorization.
 | ------ | ---------------------------- | ------------------------------------- |
 | GET    | `/api/links`                 | List saved links                      |
 | GET    | `/api/links/:code`           | Read one link                         |
-| POST   | `/api/links`                 | Save `{ code, url, title? }`          |
+| POST   | `/api/links`                 | Save `{ url, code?, title? }`         |
 | GET    | `/api/events`                | List events                           |
 | GET    | `/api/events/:id`            | Read one event                        |
 | POST   | `/api/events`                | Save `{ name, starts_at, location? }` |
