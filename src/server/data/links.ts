@@ -76,3 +76,15 @@ export async function getLink(code: string): Promise<ShortLink | null> {
     .bind(code)
     .first<ShortLink>();
 }
+
+
+// Public redirect lookup: no login, returns only the destination.
+export async function findRedirect(code: string): Promise<string | null> {
+  if (!codeSchema.safeParse(code).success) return null;
+  const db = await getDatabase();
+  const row = await db
+    .prepare("SELECT url FROM short_links WHERE code = ?")
+    .bind(code)
+    .first<{ url: string }>();
+  return row?.url ?? null;
+}

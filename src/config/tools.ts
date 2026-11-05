@@ -11,6 +11,7 @@ export type Tool = ToolDetails &
     | { status: "coming-soon"; href?: never }
   );
 
+// Tool hrefs must not start with /go (public short links) or /api
 export const tools: readonly Tool[] = [
   {
     id: "flashcards",

@@ -11,6 +11,12 @@ import {
   listEvents,
 } from "@/server/data/attendance";
 import { POST as postLink } from "@/app/api/links/route";
+import { GET as goTo } from "@/app/go/[code]/route";
+
+const visit = (code: string) =>
+  goTo(new Request(`https://internal.ctcusc.com/go/${code}`), {
+    params: Promise.resolve({ code }),
+  });
 
 const state = vi.hoisted(() => ({
   signedIn: true,
@@ -86,6 +92,24 @@ it.each([
     status: 400,
   });
 });
+it("redirects known short codes without signing in", async () => {
+  await createLink({ url: "https://example.com/path?q=1", code: "workshop" });
+  state.signedIn = false;
+  const response = await visit("workshop");
+  expect(response.status).toBe(302);
+  expect(response.headers.get("location")).toBe(
+    "https://example.com/path?q=1",
+  );
+});
+it.each(["unknown", "a", "bad code", "x".repeat(65)])(
+  "returns a helpful 404 for unknown or invalid code %s",
+  async (code) => {
+    state.signedIn = false;
+    const response = await visit(code);
+    expect(response.status).toBe(404);
+    expect(await response.text()).toMatch(/not found/i);
+  },
+);
 it("keeps attendance per event and deduplicates email case-insensitively", async () => {
   const event = await createEvent({
     name: "Workshop",
