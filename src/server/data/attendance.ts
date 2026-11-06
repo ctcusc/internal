@@ -12,9 +12,18 @@ const eventSchema = z
       .string()
       .datetime({ offset: true })
       .transform((value) => new Date(value).toISOString()),
+    ends_at: z
+      .string()
+      .datetime({ offset: true })
+      .transform((value) => new Date(value).toISOString()),
     location: z.string().trim().max(200).optional(),
+    event_type: z.enum(["meeting", "workshop", "other"]).default("other"),
   })
-  .strict();
+  .strict()
+  .refine((data) => new Date(data.ends_at) > new Date(data.starts_at), {
+    message: "End time must be after start time.",
+    path: ["ends_at"],
+  });
 const attendeeSchema = z
   .object({
     name: z.string().trim().min(1).max(200),
@@ -32,7 +41,9 @@ export type AttendanceEvent = {
   id: string;
   name: string;
   starts_at: string;
+  ends_at: string;
   location: string | null;
+  event_type: string;
   created_at: string;
 };
 export type CheckIn = {
@@ -48,9 +59,16 @@ export async function createEvent(input: NewEvent): Promise<AttendanceEvent> {
   const db = await getDatabase();
   const row = await db
     .prepare(
-      "INSERT INTO attendance_events (id, name, starts_at, location) VALUES (?, ?, ?, ?) RETURNING *",
+      "INSERT INTO attendance_events (id, name, starts_at, ends_at, location, event_type) VALUES (?, ?, ?, ?, ?, ?) RETURNING *",
     )
-    .bind(crypto.randomUUID(), data.name, data.starts_at, data.location ?? null)
+    .bind(
+      crypto.randomUUID(),
+      data.name,
+      data.starts_at,
+      data.ends_at,
+      data.location ?? null,
+      data.event_type,
+    )
     .first<AttendanceEvent>();
   if (!row) throw new Error("D1 did not return the event.");
   return row;

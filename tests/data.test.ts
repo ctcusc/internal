@@ -1,16 +1,17 @@
-import { readFile } from "node:fs/promises";
-import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
-import { getPlatformProxy } from "wrangler";
-import type { Database } from "@/server/data/db";
-import { createLink, getLink, listLinks } from "@/server/data/links";
+import { POST as postLink } from "@/app/api/links/route";
 import {
   checkIn,
   createEvent,
   getEvent,
   listAttendance,
   listEvents,
+  type NewEvent,
 } from "@/server/data/attendance";
-import { POST as postLink } from "@/app/api/links/route";
+import type { Database } from "@/server/data/db";
+import { createLink, getLink, listLinks } from "@/server/data/links";
+import { readFile } from "node:fs/promises";
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { getPlatformProxy } from "wrangler";
 
 const state = vi.hoisted(() => ({
   signedIn: true,
@@ -28,11 +29,19 @@ beforeAll(async () => {
   }>({ persist: false });
   dispose = proxy.dispose;
   state.db = proxy.env.DB;
-  const migration = await readFile(
-    new URL("../migrations/0001_links_and_attendance.sql", import.meta.url),
-    "utf8",
-  );
-  await proxy.env.DB.exec(migration.replaceAll("\n", " "));
+  for (const file of [
+    "0001_links_and_attendance.sql",
+    "0002_project_foundations.sql",
+  ]) {
+    const migration = await readFile(
+      new URL(`../migrations/${file}`, import.meta.url),
+      "utf8",
+    );
+    const sql = migration
+      .replace(/^\s*--.*$/gm, "")
+      .replaceAll("\n", " ");
+    await proxy.env.DB.exec(sql);
+  }
 }, 30_000);
 afterAll(async () => {
   await dispose?.();
@@ -90,10 +99,12 @@ it("keeps attendance per event and deduplicates email case-insensitively", async
   const event = await createEvent({
     name: "Workshop",
     starts_at: "2026-10-25T17:00:00-07:00",
+    ends_at: "2026-10-25T17:00:00-08:00",
   });
   const other = await createEvent({
     name: "Meeting",
     starts_at: "2026-10-26T00:00:00Z",
+    ends_at: "2026-10-26T00:04:00Z",
   });
   expect((await getEvent(event.id))?.starts_at).toBe(
     "2026-10-26T00:00:00.000Z",
@@ -119,14 +130,48 @@ it("rejects invalid attendance and unknown events", async () => {
     checkIn(crypto.randomUUID(), { name: "Jane", email: "jane@example.com" }),
   ).rejects.toMatchObject({ status: 404 });
   await expect(
-    createEvent({ name: "", starts_at: "bad date" }),
+    createEvent({ name: "", starts_at: "bad date", ends_at: "123" }),
   ).rejects.toMatchObject({ status: 400 });
   const event = await createEvent({
     name: "Meeting",
     starts_at: "2026-10-26T00:00:00Z",
+    ends_at: "2026-10-26T01:00:00Z",
   });
   await expect(
     checkIn(event.id, { name: "Jane", email: "bad" }),
+  ).rejects.toMatchObject({ status: 400 });
+});
+it("rejects an end time that is not after the start time", async () => {
+  await expect(
+    createEvent({
+      name: "Workshop",
+      starts_at: "2026-10-26T00:00:00Z",
+      ends_at: "2026-10-26T00:00:00Z",
+    }),
+  ).rejects.toMatchObject({ status: 400 });
+  await expect(
+    createEvent({
+      name: "Workshop",
+      starts_at: "2026-10-26T01:00:00Z",
+      ends_at: "2026-10-26T00:00:00Z",
+    }),
+  ).rejects.toMatchObject({ status: 400 });
+  const event = await createEvent({
+    name: "Workshop",
+    starts_at: "2026-10-26T00:00:00Z",
+    ends_at: "2026-10-26T01:00:00Z",
+  });
+  expect(event.ends_at).toBe("2026-10-26T01:00:00.000Z");
+  expect(event.event_type).toBe("other");
+});
+it("rejects an unknown event type", async () => {
+  await expect(
+    createEvent({
+      name: "Workshop",
+      starts_at: "2026-10-26T00:00:00Z",
+      ends_at: "2026-10-26T01:00:00Z",
+      event_type: "party",
+    } as unknown as NewEvent),
   ).rejects.toMatchObject({ status: 400 });
 });
 it("requires login for every private read and write helper", async () => {
@@ -135,7 +180,12 @@ it("requires login for every private read and write helper", async () => {
     () => createLink({ url: "https://example.com", code: "example-one" }),
     () => listLinks(),
     () => getLink("abc"),
-    () => createEvent({ name: "Event", starts_at: "2026-10-26T00:00:00Z" }),
+    () =>
+      createEvent({
+        name: "Event",
+        starts_at: "2026-10-26T00:00:00Z",
+        ends_at: "2026-10-26T00:00:02Z",
+      }),
     () => listEvents(),
     () => getEvent(crypto.randomUUID()),
     () => listAttendance(crypto.randomUUID()),
