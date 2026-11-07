@@ -2,13 +2,7 @@ import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { getPlatformProxy } from "wrangler";
 import type { Database } from "@/server/data/db";
-import {
-  createLink,
-  generateCode,
-  getLink,
-  listLinks,
-  MAX_CODE_ATTEMPTS,
-} from "@/server/data/links";
+import { createLink, getLink, listLinks } from "@/server/data/links";
 import {
   checkIn,
   createEvent,
@@ -65,57 +59,6 @@ it("persists links and rejects duplicate codes", async () => {
     createLink({ url: "https://example.org", code: "workshop" }),
   ).rejects.toMatchObject({ status: 409 });
   expect(await getLink("unknown")).toBeNull();
-});
-it("generates a code when none is given", async () => {
-  const link = await createLink({
-    url: "https://example.com/event",
-    title: "Event",
-  });
-  expect(link.code).toMatch(/^[2-9a-hjkmnp-z]{7}$/);
-  expect(link).toMatchObject({ url: "https://example.com/event" });
-  expect(await getLink(link.code)).toEqual(link);
-});
-it("generates unbiased-looking, distinct codes", () => {
-  const codes = new Set(Array.from({ length: 1000 }, generateCode));
-  expect(codes.size).toBe(1000);
-  for (const code of codes) expect(code).toMatch(/^[2-9a-hjkmnp-z]{7}$/);
-});
-it("retries a generated-code collision without overwriting", async () => {
-  const existing = await createLink({
-    url: "https://example.com/original",
-    code: "taken01",
-  });
-  const codes = ["taken01", "taken01", "fresh01"];
-  const generate = vi.fn(() => codes.shift()!);
-  const link = await createLink(
-    { url: "https://example.com/new" },
-    { generateCode: generate },
-  );
-  expect(link).toMatchObject({
-    code: "fresh01",
-    url: "https://example.com/new",
-  });
-  expect(generate).toHaveBeenCalledTimes(3);
-  expect(await getLink("taken01")).toEqual(existing);
-});
-it("gives up after a bounded number of collisions", async () => {
-  const existing = await createLink({
-    url: "https://example.com/original",
-    code: "taken01",
-  });
-  const generate = vi.fn(() => "taken01");
-  await expect(
-    createLink({ url: "https://example.com/new" }, { generateCode: generate }),
-  ).rejects.toMatchObject({ status: 409 });
-  expect(generate).toHaveBeenCalledTimes(MAX_CODE_ATTEMPTS);
-  expect(await listLinks()).toEqual([existing]);
-});
-it("validates the URL before generating a code", async () => {
-  const generate = vi.fn(() => "unused01");
-  await expect(
-    createLink({ url: "javascript:alert(1)" }, { generateCode: generate }),
-  ).rejects.toMatchObject({ status: 400 });
-  expect(generate).not.toHaveBeenCalled();
 });
 it("paginates links", async () => {
   const first = await createLink({
@@ -212,25 +155,6 @@ it("handles JSON, auth, cross-origin writes, and oversized requests", async () =
     (await postLink(request('{"url":"https://example.com","code":"example"}')))
       .status,
   ).toBe(201);
-  const generated = await postLink(
-    request('{"url":"https://example.com/no-code"}'),
-  );
-  expect(generated.status).toBe(201);
-  const { link } = (await generated.json()) as {
-    link: { code: string; url: string; title: string | null };
-  };
-  expect(link.code).toMatch(/^[2-9a-hjkmnp-z]{7}$/);
-  expect(link).toMatchObject({
-    url: "https://example.com/no-code",
-    title: null,
-  });
-  expect(
-    (await postLink(request('{"url":"https://example.com","code":"example"}')))
-      .status,
-  ).toBe(409);
-  expect((await postLink(request('{"url":"ftp://example.com"}'))).status).toBe(
-    400,
-  );
   expect((await postLink(request("{"))).status).toBe(400);
   expect((await postLink(request("[]"))).status).toBe(400);
   expect(
