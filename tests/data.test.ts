@@ -10,7 +10,15 @@ import {
 import type { Database } from "@/server/data/db";
 import { createLink, getLink, listLinks } from "@/server/data/links";
 import { readFile } from "node:fs/promises";
-import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { getPlatformProxy } from "wrangler";
 
 const state = vi.hoisted(() => ({
@@ -37,9 +45,7 @@ beforeAll(async () => {
       new URL(`../migrations/${file}`, import.meta.url),
       "utf8",
     );
-    const sql = migration
-      .replace(/^\s*--.*$/gm, "")
-      .replaceAll("\n", " ");
+    const sql = migration.replace(/^\s*--.*$/gm, "").replaceAll("\n", " ");
     await proxy.env.DB.exec(sql);
   }
 }, 30_000);
@@ -55,6 +61,9 @@ beforeEach(async () => {
   ]) {
     await state.db!.prepare(`DELETE FROM ${table}`).bind().first();
   }
+});
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 it("persists links and rejects duplicate codes", async () => {
@@ -216,4 +225,42 @@ it("handles JSON, auth, cross-origin writes, and oversized requests", async () =
   expect((await postLink(request(" ".repeat(16_385)))).status).toBe(413);
   state.signedIn = false;
   expect((await postLink(request("{}"))).status).toBe(401);
+});
+it("rejects check-ins outside of the event's live window", async () => {
+  vi.useFakeTimers();
+  const event = await createEvent({
+    name: "Workshop",
+    starts_at: "2026-10-26T01:00:00Z",
+    ends_at: "2026-10-26T02:00:00Z",
+  });
+  // Before start time
+  vi.setSystemTime(new Date("2026-10-26T00:59:59Z"));
+  await expect(
+    checkIn(event.id, {
+      name: "Jane",
+      email: "jane@example.com",
+    }),
+  ).rejects.toMatchObject({ status: 409 });
+  // in window at start time
+  vi.setSystemTime(new Date("2026-10-26T01:00:00Z"));
+  const checkIn1 = await checkIn(event.id, {
+    name: "Jane",
+    email: "jane@example.com",
+  });
+  expect(checkIn1.name).toBe("Jane");
+  // repeated check-ins
+  const checkIn2 = await checkIn(event.id, {
+    name: "Jane Doe",
+    email: "jane@example.com",
+  });
+  expect(checkIn2.name).toBe("Jane Doe");
+  expect(checkIn2.checked_in_at).toBe(checkIn1.checked_in_at);
+  // out of window at end time
+  vi.setSystemTime(new Date("2026-10-26T02:00:00Z"));
+  await expect(
+    checkIn(event.id, {
+      name: "Jane",
+      email: "jane@example.com",
+    }),
+  ).rejects.toMatchObject({ status: 409 });
 });
