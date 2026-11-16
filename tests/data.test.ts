@@ -97,9 +97,7 @@ it("redirects known short codes without signing in", async () => {
   state.signedIn = false;
   const response = await visit("workshop");
   expect(response.status).toBe(302);
-  expect(response.headers.get("location")).toBe(
-    "https://example.com/path?q=1",
-  );
+  expect(response.headers.get("location")).toBe("https://example.com/path?q=1");
 });
 it.each(["unknown", "a", "bad code", "x".repeat(65)])(
   "returns a helpful 404 for unknown or invalid code %s",
