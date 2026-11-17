@@ -24,7 +24,8 @@
     },
   ],
   "observability": { "enabled": true },
-  // Google client ID, secret and allowlist are Worker secrets set by Deploy.
+  // GOOGLE_CLIENT_ID/SECRET come from Deploy; GOOGLE_ALLOWED_EMAILS is a
+  // Worker secret managed in the Cloudflare dashboard.
   "vars": {
     "GOOGLE_REDIRECT_URI": "https://internal.ctcusc.com/api/auth/google/callback",
   },
