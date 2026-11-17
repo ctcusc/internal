@@ -37,6 +37,12 @@ jobs:
           secrets: |
             SITE_PASSWORD
             SESSION_SECRET
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+            GOOGLE_ALLOWED_EMAILS
         env:
           SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_ALLOWED_EMAILS: ${{ secrets.GOOGLE_ALLOWED_EMAILS }}

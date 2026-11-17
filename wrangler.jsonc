@@ -24,6 +24,10 @@
     },
   ],
   "observability": { "enabled": true },
+  // Google client ID, secret and allowlist are Worker secrets set by Deploy.
+  "vars": {
+    "GOOGLE_REDIRECT_URI": "https://internal.ctcusc.com/api/auth/google/callback",
+  },
   "secrets": { "required": ["SITE_PASSWORD", "SESSION_SECRET"] },
   "workers_dev": true,
   "preview_urls": true,
