@@ -20,8 +20,16 @@ const sans = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://internal.ctcusc.com"),
   title: { default: "CTC Internal", template: "%s · CTC Internal" },
-  description: "CTC internal tools.",
+  description: "Internal tools for Code the Change at USC.",
+  openGraph: {
+    type: "website",
+    siteName: "CTC Internal",
+    title: "CTC Internal",
+    description: "Internal tools for Code the Change at USC.",
+  },
+  twitter: { card: "summary_large_image" },
   icons: { icon: "/logo.svg" },
   robots: { index: false, follow: false },
 };

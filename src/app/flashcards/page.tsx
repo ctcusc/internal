@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { Flashcards } from "@/features/flashcards/flashcards";
 import { members } from "@/features/flashcards/members";
+import { shuffle } from "@/features/flashcards/shuffle";
 import { requireClubSession } from "@/server/auth/server";
 
 export const metadata: Metadata = { title: "Flashcards" };
@@ -17,7 +18,7 @@ export default async function FlashcardsPage() {
       backLink={{ href: "/", label: "Back to tools" }}
       contentClassName="max-w-3xl"
     >
-      <Flashcards members={members} />
+      <Flashcards members={shuffle(members)} />
     </DashboardShell>
   );
 }

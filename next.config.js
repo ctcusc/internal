@@ -1,11 +1,13 @@
 import "./src/env.js";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+initOpenNextCloudflareForDev();
 
 const isPreviewBuild = process.env.PREVIEW_BUILD === "true";
 
 /** @type {import("next").NextConfig} */
 const config = {
   poweredByHeader: false,
-  eslint: { ignoreDuringBuilds: isPreviewBuild },
   typescript: { ignoreBuildErrors: isPreviewBuild },
   async headers() {
     return [

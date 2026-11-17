@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ctc-internal-preview",
+      "database_id": "5bb7c7b4-c5eb-440b-b358-54f30ef71850",
+      "migrations_dir": "migrations",
+    },
+  ],
+}

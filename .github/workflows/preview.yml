@@ -62,6 +62,12 @@ jobs:
           cache: pnpm
       - if: steps.pr.outputs.deploy == 'true'
         run: pnpm install --frozen-lockfile
+      - name: Apply preview D1 migrations
+        if: steps.pr.outputs.deploy == 'true'
+        run: pnpm db:migrate:preview
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Build preview
         if: steps.pr.outputs.deploy == 'true'
         env:
