@@ -7,12 +7,8 @@ import { z } from "zod";
 import { getAuthConfig } from "./config";
 import { checkLoginRateLimit } from "./rate-limit";
 import { safeReturnTo } from "./redirect";
-import {
-  createSession,
-  passwordMatches,
-  SESSION_COOKIE,
-  SESSION_SECONDS,
-} from "./session";
+import { startClubSession } from "./server";
+import { passwordMatches, SESSION_COOKIE } from "./session";
 
 export type SignInState = { error?: string };
 
@@ -46,14 +42,7 @@ export async function signIn(
     return { error: "Incorrect password." };
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, await createSession(config), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_SECONDS,
-  });
+  await startClubSession(config);
   redirect(safeReturnTo(formData.get("next")));
 }
 

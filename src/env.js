@@ -7,10 +7,11 @@ export const env = createEnv({
     // Optional during builds; required for sign-in.
     SITE_PASSWORD: z.string().min(12).max(1024).optional(),
     SESSION_SECRET: z.string().min(32).optional(),
-    // Reserved for the Google sign-in integration; not used by password login.
+    // Optional; Google sign-in stays hidden unless all four are set.
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     GOOGLE_REDIRECT_URI: z.string().url().optional(),
+    GOOGLE_ALLOWED_EMAILS: z.string().optional(),
   },
   client: {},
   runtimeEnv: {
@@ -20,6 +21,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI,
+    GOOGLE_ALLOWED_EMAILS: process.env.GOOGLE_ALLOWED_EMAILS,
   },
   emptyStringAsUndefined: true,
 });
