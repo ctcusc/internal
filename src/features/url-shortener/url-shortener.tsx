@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 
+import { QrCode } from "@/components/qr-code";
+
 export function UrlShortener() {
   // Store the form input, request state, result, and feedback.
   const [url, setUrl] = useState("");
@@ -227,12 +229,7 @@ export function UrlShortener() {
             {copyMessage}
           </p>
 
-          {/* Pass shortUrl to the QR component when it is available. */}
-          <div className="border-border rounded-md border border-dashed p-6">
-            <p className="text-muted-foreground text-sm">
-              QR preview will appear here.
-            </p>
-          </div>
+         <QrCode value={shortUrl} />
         </section>
       ) : null}
     </div>
