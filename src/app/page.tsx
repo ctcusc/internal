@@ -6,7 +6,7 @@ import { tools } from "@/config/tools";
 import { getAuthConfig } from "@/server/auth/config";
 import { safeReturnTo } from "@/server/auth/redirect";
 import { getClubSession } from "@/server/auth/server";
-import { ReactionCountCard } from "@/features/slack-reactions/reaction-count-card"; //for slack counter
+import { SlackReactionCount } from "@/features/slack-reactions/slack-reaction-count"; //for slack counter
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +35,7 @@ export default async function HomePage({
 
       {/* Display the Slack reaction count below the tools. */}
       <div className="mt-8">
-        <ReactionCountCard
-          channelName="#spotted"
-          emojiName="CTC logo"
-          count={null}
-        />
+        <SlackReactionCount />
       </div>
     </DashboardShell>
   );
