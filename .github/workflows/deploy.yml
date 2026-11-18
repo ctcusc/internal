@@ -34,14 +34,10 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
           command: deploy
-          # GOOGLE_ALLOWED_EMAILS is managed in Cloudflare; deploys keep it as-is.
+          # Google secrets are managed in the Cloudflare dashboard; deploys keep them.
           secrets: |
             SITE_PASSWORD
             SESSION_SECRET
-            GOOGLE_CLIENT_ID
-            GOOGLE_CLIENT_SECRET
         env:
           SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
