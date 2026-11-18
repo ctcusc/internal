@@ -70,8 +70,10 @@ for the CTC Cloudflare account.
 - `short_links`: `code` (primary key), `url`, optional `title`, `created_at`.
   A code must be supplied by the developer's app. QR codes can encode the eventual
   short URL; image generation and storage are left to the project.
-- `attendance_events`: `id` (UUID), `name`, `starts_at` (UTC), optional `location`,
-  `created_at`.
+- `attendance_events`: `id` (UUID), `name`, `event_type`, `starts_at` (UTC),
+  `ends_at` (UTC, nullable for older events), optional `location`, `created_at`.
+  Migration `0002` gives existing events `event_type: "other"` and `ends_at: null`;
+  they remain readable without an end time.
 - `attendance_check_ins`: `event_id` (foreign key), `email`, `name`, `checked_in_at`.
   One row per event/email. Repeating a write updates the name and preserves the
   original timestamp. Email is normalized to lowercase.
@@ -82,16 +84,16 @@ All endpoints require the existing club login cookie. They are intended for
 same-origin pages in this app. All signed-in members share access; this is not
 individual identity verification or per-role authorization.
 
-| Method | Path                         | Read/write                            |
-| ------ | ---------------------------- | ------------------------------------- |
-| GET    | `/api/links`                 | List saved links                      |
-| GET    | `/api/links/:code`           | Read one link                         |
-| POST   | `/api/links`                 | Save `{ code, url, title? }`          |
-| GET    | `/api/events`                | List events                           |
-| GET    | `/api/events/:id`            | Read one event                        |
-| POST   | `/api/events`                | Save `{ name, starts_at, location? }` |
-| GET    | `/api/events/:id/attendance` | List check-ins                        |
-| POST   | `/api/events/:id/attendance` | Save `{ name, email }`                |
+| Method | Path                         | Read/write                                                 |
+| ------ | ---------------------------- | ---------------------------------------------------------- |
+| GET    | `/api/links`                 | List saved links                                           |
+| GET    | `/api/links/:code`           | Read one link                                              |
+| POST   | `/api/links`                 | Save `{ code, url, title? }`                               |
+| GET    | `/api/events`                | List events                                                |
+| GET    | `/api/events/:id`            | Read one event                                             |
+| POST   | `/api/events`                | Save `{ name, event_type, starts_at, ends_at, location? }` |
+| GET    | `/api/events/:id/attendance` | List check-ins                                             |
+| POST   | `/api/events/:id/attendance` | Save `{ name, email }`                                     |
 
 List endpoints accept `?limit=50&offset=0` (maximum limit 100). Responses wrap
 results in `links`, `link`, `events`, `event`, `attendance`, or `checkIn`.
@@ -99,6 +101,25 @@ Dates are ISO 8601 strings. Send writes as `application/json` (maximum 16 KiB).
 Errors return `{ error: "..." }`: 400 invalid input, 401 sign-in required,
 403 cross-origin write, 404 missing record, 409 duplicate code,
 413 oversized body, 415 incorrect content type, or 503 unavailable database.
+
+New events require `event_type` and `ends_at`. The type is a free-text label of
+1–50 characters after trimming whitespace, such as `"general meeting"`,
+`"workshop"`, or `"other"`; custom labels are also accepted. Both timestamps must
+include a timezone (`Z` or an offset such as `-08:00`) and are normalized to UTC.
+The end time must be strictly after the start time; an equal or earlier end time
+returns HTTP 400 with `{ error: "End time must be after start time." }`.
+
+Example event creation request body:
+
+```json
+{
+  "name": "Intro to Git",
+  "event_type": "workshop",
+  "starts_at": "2026-11-20T18:00:00-08:00",
+  "ends_at": "2026-11-20T19:30:00-08:00",
+  "location": "Engineering Hall"
+}
+```
 
 Example from a signed-in page:
 
