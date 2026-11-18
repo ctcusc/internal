@@ -19,4 +19,14 @@ export const tools: readonly Tool[] = [
     status: "available",
     href: "/flashcards",
   },
+
+  //added for url shortener
+  {
+    id: "url-shortener",
+    name: "URL Shortener & QR",
+    description: "Create short links and QR codes.",
+    icon: "people",
+    status: "available",
+    href: "/url-shortener",
+  },
 ];
