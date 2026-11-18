@@ -3,9 +3,25 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { getAuthConfig } from "./config";
+import { getAuthConfig, type AuthConfig } from "./config";
 import { safeReturnTo } from "./redirect";
-import { readSession, SESSION_COOKIE } from "./session";
+import {
+  createSession,
+  readSession,
+  SESSION_COOKIE,
+  SESSION_SECONDS,
+} from "./session";
+
+export async function startClubSession(config: AuthConfig) {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, await createSession(config), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_SECONDS,
+  });
+}
 
 export async function getClubSession() {
   const config = getAuthConfig();

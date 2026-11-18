@@ -34,6 +34,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
           command: deploy
+          # Google secrets are managed in the Cloudflare dashboard; deploys keep them.
           secrets: |
             SITE_PASSWORD
             SESSION_SECRET

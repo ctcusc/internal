@@ -1,3 +1,9 @@
 # Local Cloudflare preview: copy to .dev.vars.
 SITE_PASSWORD=
 SESSION_SECRET=
+# Optional Google sign-in (all four required to show the button).
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8787/api/auth/google/callback
+# Comma-separated member emails allowed to sign in with Google.
+GOOGLE_ALLOWED_EMAILS=
