@@ -6,6 +6,7 @@ import { tools } from "@/config/tools";
 import { getAuthConfig } from "@/server/auth/config";
 import { safeReturnTo } from "@/server/auth/redirect";
 import { getClubSession } from "@/server/auth/server";
+import { SlackReactionCount } from "@/features/slack-reactions/slack-reaction-count"; //for slack counter
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,11 @@ export default async function HomePage({
       ) : (
         <p className="text-muted-foreground text-sm">No tools yet.</p>
       )}
+
+      {/* Display the Slack reaction count below the tools. */}
+      <div className="mt-8">
+        <SlackReactionCount />
+      </div>
     </DashboardShell>
   );
 }
