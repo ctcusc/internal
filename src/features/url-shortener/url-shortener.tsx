@@ -229,7 +229,7 @@ export function UrlShortener() {
             {copyMessage}
           </p>
 
-         <QrCode value={shortUrl} />
+          <QrCode value={shortUrl} />
         </section>
       ) : null}
     </div>
