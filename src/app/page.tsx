@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Welcome } from "@/components/auth/welcome";
 import { DashboardShell } from "@/components/dashboard/shell";
+import { SlackReactionCount } from "@/components/dashboard/slack-reaction-count";
 import { ToolCard } from "@/components/dashboard/tool-card";
 import { tools } from "@/config/tools";
 import { getAuthConfig } from "@/server/auth/config";
@@ -31,6 +32,7 @@ export default async function HomePage({
       ) : (
         <p className="text-muted-foreground text-sm">No tools yet.</p>
       )}
+      <SlackReactionCount />
     </DashboardShell>
   );
 }
