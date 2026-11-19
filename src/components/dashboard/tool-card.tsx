@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, UsersRound } from "lucide-react";
+import { ArrowRight, Link2, UsersRound } from "lucide-react";
 
 import type { Tool } from "@/config/tools";
 import { Card, CardContent } from "@/components/ui/card";
 
-const icons = { people: UsersRound };
+const icons = { people: UsersRound, link: Link2 };
 
 export function ToolCard({ tool }: { tool: Tool }) {
   const Icon = icons[tool.icon];
