@@ -1,5 +1,13 @@
 import { readFile } from "node:fs/promises";
-import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { getPlatformProxy } from "wrangler";
 import type { Database } from "@/server/data/db";
 import { createLink, getLink, listLinks } from "@/server/data/links";
@@ -37,6 +45,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await dispose?.();
 });
+afterEach(() => vi.restoreAllMocks());
 beforeEach(async () => {
   state.signedIn = true;
   for (const table of [
@@ -59,6 +68,48 @@ it("persists links and rejects duplicate codes", async () => {
     createLink({ url: "https://example.org", code: "workshop" }),
   ).rejects.toMatchObject({ status: 409 });
   expect(await getLink("unknown")).toBeNull();
+});
+it("returns the generated link from the create endpoint", async () => {
+  const response = await postLink(
+    new Request("https://internal.ctcusc.com/api/links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: "https://example.org" }),
+    }),
+  );
+  expect(response.status).toBe(201);
+  const [stored] = await listLinks();
+  expect(stored?.code).toMatch(/^[a-zA-Z0-9_-]{3,64}$/);
+  expect(stored).toMatchObject({
+    url: "https://example.org",
+    title: null,
+  });
+  await expect(response.json()).resolves.toEqual({ link: stored });
+});
+it("retries a generated code collision without changing the existing link", async () => {
+  const uuid = "11111111-1111-4111-8111-111111111111";
+  const randomUUID = vi
+    .spyOn(crypto, "randomUUID")
+    .mockReturnValueOnce(uuid)
+    .mockReturnValueOnce(uuid)
+    .mockReturnValueOnce("22222222-2222-4222-8222-222222222222");
+  const original = await createLink({ url: "https://example.com/original" });
+  const next = await createLink({ url: "https://example.com/next" });
+  expect(randomUUID).toHaveBeenCalledTimes(3);
+  expect(next.code).not.toBe(original.code);
+  expect(await getLink(original.code)).toEqual(original);
+  expect(await getLink(next.code)).toEqual(next);
+});
+it("returns a conflict after five generated code collisions", async () => {
+  const uuid = crypto.randomUUID();
+  const randomUUID = vi.spyOn(crypto, "randomUUID").mockReturnValue(uuid);
+  const original = await createLink({ url: "https://example.com/original" });
+  randomUUID.mockClear();
+  await expect(
+    createLink({ url: "https://example.org" }),
+  ).rejects.toMatchObject({ status: 409 });
+  expect(randomUUID).toHaveBeenCalledTimes(5);
+  expect(await listLinks()).toEqual([original]);
 });
 it("paginates links", async () => {
   const first = await createLink({

@@ -38,7 +38,7 @@ Production and previews share four GitHub Actions secrets: `CLOUDFLARE_ACCOUNT_I
 
 D1 is bound as `DB` to `ctc-internal` (`dded22aa-c431-40e7-bae4-3d62f0540c16`).
 This starter supplies storage and basic reads/writes. Developers implement the
-short-code generation, redirect behavior, QR rendering, and attendance UI/workflows.
+redirect behavior, QR rendering, and attendance UI/workflows.
 There is no public redirect or unauthenticated attendance endpoint.
 
 ### Database setup
@@ -68,8 +68,7 @@ for the CTC Cloudflare account.
 ### Tables
 
 - `short_links`: `code` (primary key), `url`, optional `title`, `created_at`.
-  A code must be supplied by the developer's app. QR codes can encode the eventual
-  short URL; image generation and storage are left to the project.
+  Omit `code` to have the server generate one, or supply a custom code.
 - `attendance_events`: `id` (UUID), `name`, `starts_at` (UTC), optional `location`,
   `created_at`.
 - `attendance_check_ins`: `event_id` (foreign key), `email`, `name`, `checked_in_at`.
@@ -86,7 +85,7 @@ individual identity verification or per-role authorization.
 | ------ | ---------------------------- | ------------------------------------- |
 | GET    | `/api/links`                 | List saved links                      |
 | GET    | `/api/links/:code`           | Read one link                         |
-| POST   | `/api/links`                 | Save `{ code, url, title? }`          |
+| POST   | `/api/links`                 | Save `{ url, code?, title? }`         |
 | GET    | `/api/events`                | List events                           |
 | GET    | `/api/events/:id`            | Read one event                        |
 | POST   | `/api/events`                | Save `{ name, starts_at, location? }` |
@@ -106,7 +105,7 @@ Example from a signed-in page:
 const response = await fetch("/api/links", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ code: "workshop", url: "https://example.com" }),
+  body: JSON.stringify({ url: "https://example.com" }),
 });
 if (!response.ok) throw new Error("Could not save link");
 const { link } = await response.json();
