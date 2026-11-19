@@ -1,3 +1,5 @@
 # Local Cloudflare preview: copy to .dev.vars.
 SITE_PASSWORD=
 SESSION_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

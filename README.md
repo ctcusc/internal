@@ -19,6 +19,16 @@ Set `SITE_PASSWORD` (12+ characters) and `SESSION_SECRET` (32+ characters) in `.
 pnpm dev
 ```
 
+## Google sign-in
+
+USC Google sign-in uses the OpenID Connect authorization-code flow with PKCE, state, and a nonce. The flow uses [`oauth4webapi`](https://github.com/panva/oauth4webapi), which is Worker-compatible. It checks the state (login CSRF), exchanges the code with the PKCE verifier, and validates the ID token (signature, issuer, audience, expiry, nonce). The server then accepts it only when `email_verified` is true, the email is `@usc.edu`, and the `hd` claim is `usc.edu`. The signed-in identity (Google account ID `sub`, name, email) is stored in an HTTP-only, eight-hour session cookie signed with `SESSION_SECRET`.
+
+Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from a Google OAuth web client whose authorized redirect URIs include `<origin>/api/auth/google/callback` for every origin that signs in (local: `http://localhost:3000`).
+
+- `GET /api/auth/google?next=/path` starts sign-in; failures return to `/?error=google_sign_in_failed`.
+- Server code calls `getIdentity()` or `requireIdentity(returnTo)` from `@/server/auth/server`.
+- The club-password session is separate and is retired by the sign-in UI issue; it is never accepted as a Google identity.
+
 ## Commands
 
 - `pnpm check` — formatting, lint, types, and tests
