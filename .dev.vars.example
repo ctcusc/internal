@@ -4,3 +4,4 @@ SESSION_SECRET=
 # Slack channel ID and emoji name (without surrounding colons) to count.
 SLACK_REACTION_CHANNEL_ID=
 SLACK_REACTION_EMOJI=
+SLACK_SIGNING_SECRET=
