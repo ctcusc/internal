@@ -76,3 +76,16 @@ export async function getLink(code: string): Promise<ShortLink | null> {
     .bind(code)
     .first<ShortLink>();
 }
+
+export async function getPublicLinkDestination(
+  code: string,
+): Promise<string | null> {
+  if (!codeSchema.safeParse(code).success) return null;
+  const db = await getDatabase();
+  const row = await db
+    .prepare("SELECT url FROM short_links WHERE code = ?")
+    .bind(code)
+    .first<{ url: string }>();
+  const destination = linkSchema.shape.url.safeParse(row?.url);
+  return destination.success ? destination.data : null;
+}
