@@ -3,13 +3,15 @@ import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // The small subset of the D1 binding used by this app.
+interface Statement {
+  bind(...values: (string | number | null)[]): Statement;
+  first<T>(): Promise<T | null>;
+  all<T>(): Promise<{ results: T[] }>;
+}
+
 export interface Database {
-  prepare(sql: string): {
-    bind(...values: (string | number | null)[]): {
-      first<T>(): Promise<T | null>;
-      all<T>(): Promise<{ results: T[] }>;
-    };
-  };
+  prepare(sql: string): Statement;
+  batch(statements: Statement[]): Promise<unknown[]>;
 }
 
 export async function getDatabase(): Promise<Database> {
