@@ -2,7 +2,7 @@ type ToolDetails = {
   id: string;
   name: string;
   description?: string;
-  icon: "people";
+  icon: "people" | "link";
 };
 
 export type Tool = ToolDetails &
@@ -18,5 +18,12 @@ export const tools: readonly Tool[] = [
     icon: "people",
     status: "available",
     href: "/flashcards",
+  },
+  {
+    id: "links",
+    name: "Short links",
+    icon: "link",
+    status: "available",
+    href: "/links",
   },
 ];
