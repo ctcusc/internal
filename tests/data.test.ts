@@ -105,6 +105,9 @@ it.each([
   });
 });
 it("keeps attendance per event and deduplicates email case-insensitively", async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-10-26T00:30:00Z"));
+
   const event = await createEvent({
     name: "Workshop",
     starts_at: "2026-10-25T17:00:00-07:00",
@@ -131,21 +134,28 @@ it("keeps attendance per event and deduplicates email case-insensitively", async
   expect(repeated.name).toBe("Jane Doe");
   expect(await listAttendance(event.id)).toEqual([repeated]);
   expect(await listAttendance(other.id)).toEqual([]);
+
+  vi.setSystemTime(new Date("2026-10-26T00:02:00Z"));
   await checkIn(other.id, { name: "Jane", email: "jane@example.com" });
   expect(await listAttendance(other.id)).toHaveLength(1);
 });
 it("rejects invalid attendance and unknown events", async () => {
+  vi.useFakeTimers();
+
   await expect(
     checkIn(crypto.randomUUID(), { name: "Jane", email: "jane@example.com" }),
   ).rejects.toMatchObject({ status: 404 });
   await expect(
     createEvent({ name: "", starts_at: "bad date", ends_at: "123" }),
   ).rejects.toMatchObject({ status: 400 });
+
   const event = await createEvent({
     name: "Meeting",
     starts_at: "2026-10-26T00:00:00Z",
     ends_at: "2026-10-26T01:00:00Z",
   });
+  vi.setSystemTime(new Date("2026-10-26T00:30:00Z"));
+
   await expect(
     checkIn(event.id, { name: "Jane", email: "bad" }),
   ).rejects.toMatchObject({ status: 400 });
