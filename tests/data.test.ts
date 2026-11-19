@@ -10,9 +10,14 @@ import {
   listAttendance,
   listEvents,
   type AttendanceEvent,
+  type CheckIn,
 } from "@/server/data/attendance";
 import { POST as postLink } from "@/app/api/links/route";
 import { POST as postEvent } from "@/app/api/events/route";
+import {
+  GET as getAttendance,
+  POST as postAttendance,
+} from "@/app/api/events/[id]/attendance/route";
 
 const state = vi.hoisted(() => ({
   signedIn: true,
@@ -38,6 +43,13 @@ const eventRequest = (data: unknown) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+const attendanceRequest = (eventId: string) =>
+  new Request(`https://internal.ctcusc.com/api/events/${eventId}/attendance`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "Jane", email: "jane@example.com" }),
+  });
+const attendanceContext = (id: string) => ({ params: Promise.resolve({ id }) });
 
 async function applyMigrations(
   db: Database & { exec(sql: string): Promise<unknown> },
@@ -68,6 +80,7 @@ afterAll(async () => {
   await dispose?.();
 });
 beforeEach(async () => {
+  vi.restoreAllMocks();
   state.signedIn = true;
   for (const table of [
     "attendance_check_ins",
@@ -117,6 +130,7 @@ it.each([
   });
 });
 it("keeps attendance per event and deduplicates email case-insensitively", async () => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-26T00:30:00Z"));
   const event = await createEvent({
     name: "Workshop",
     event_type: "workshop",
@@ -149,6 +163,7 @@ it("keeps attendance per event and deduplicates email case-insensitively", async
   expect(await listAttendance(other.id)).toHaveLength(1);
 });
 it("rejects invalid attendance and unknown events", async () => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-26T00:30:00Z"));
   await expect(
     checkIn(crypto.randomUUID(), { name: "Jane", email: "jane@example.com" }),
   ).rejects.toMatchObject({ status: 404 });
@@ -164,6 +179,80 @@ it("rejects invalid attendance and unknown events", async () => {
   await expect(
     checkIn(event.id, { name: "Jane", email: "bad" }),
   ).rejects.toMatchObject({ status: 400 });
+});
+it("accepts check-in from the start through the final millisecond and preserves its first timestamp", async () => {
+  const event = await createEvent(validEvent);
+  const now = vi.spyOn(Date, "now");
+  now.mockReturnValue(Date.parse("2026-10-26T00:00:00.000Z"));
+  const firstResponse = await postAttendance(
+    attendanceRequest(event.id),
+    attendanceContext(event.id),
+  );
+  expect(firstResponse.status).toBe(200);
+  const { checkIn: first } = (await firstResponse.json()) as {
+    checkIn: CheckIn;
+  };
+
+  now.mockReturnValue(Date.parse("2026-10-26T00:59:59.999Z"));
+  const repeatedResponse = await postAttendance(
+    new Request(attendanceRequest(event.id).url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Jane Doe", email: "JANE@example.com" }),
+    }),
+    attendanceContext(event.id),
+  );
+  expect(repeatedResponse.status).toBe(200);
+  const { checkIn: repeated } = (await repeatedResponse.json()) as {
+    checkIn: CheckIn;
+  };
+  expect(repeated.checked_in_at).toBe(first.checked_in_at);
+  expect(repeated.name).toBe("Jane Doe");
+  expect(await listAttendance(event.id)).toEqual([repeated]);
+});
+it.each([
+  ["before the event", "2026-10-25T23:59:59.999Z"],
+  ["at the event end", "2026-10-26T01:00:00.000Z"],
+  ["after the event", "2026-10-26T01:00:00.001Z"],
+])(
+  "rejects check-in %s but keeps organizer attendance readable",
+  async (_state, time) => {
+    const event = await createEvent(validEvent);
+    vi.spyOn(Date, "now").mockReturnValue(Date.parse(time));
+    const response = await postAttendance(
+      attendanceRequest(event.id),
+      attendanceContext(event.id),
+    );
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: "Check-in is available only while the event is live.",
+    });
+    expect(await listAttendance(event.id)).toEqual([]);
+    const getResponse = await getAttendance(
+      new Request(attendanceRequest(event.id).url),
+      attendanceContext(event.id),
+    );
+    expect(getResponse.status).toBe(200);
+    expect(await getResponse.json()).toEqual({ attendance: [] });
+  },
+);
+it("keeps recorded attendance available to organizers after the event ends", async () => {
+  const event = await createEvent(validEvent);
+  const now = vi.spyOn(Date, "now");
+  now.mockReturnValue(Date.parse("2026-10-26T00:30:00Z"));
+  const checkInResponse = await postAttendance(
+    attendanceRequest(event.id),
+    attendanceContext(event.id),
+  );
+  expect(checkInResponse.status).toBe(200);
+  const { checkIn } = (await checkInResponse.json()) as { checkIn: CheckIn };
+  now.mockReturnValue(Date.parse("2026-10-26T01:00:00Z"));
+  const response = await getAttendance(
+    new Request(attendanceRequest(event.id).url),
+    attendanceContext(event.id),
+  );
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ attendance: [checkIn] });
 });
 it("requires login for every private read and write helper", async () => {
   state.signedIn = false;
@@ -266,6 +355,10 @@ it("keeps pre-migration events readable with a default type and no end time", as
     const expected = { ...legacy, event_type: "other", ends_at: null };
     expect(await getEvent(id)).toEqual(expected);
     expect(await listEvents()).toEqual([expected]);
+    vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-26T00:30:00Z"));
+    await expect(
+      checkIn(id, { name: "Jane", email: "jane@example.com" }),
+    ).rejects.toMatchObject({ status: 409 });
   } finally {
     state.db = originalDb;
     await proxy.dispose();

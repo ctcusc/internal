@@ -120,7 +120,19 @@ export async function checkIn(
   eventId: string,
   input: Attendee,
 ): Promise<CheckIn> {
-  if (!(await getEvent(eventId))) throw new DataError(404, "Event not found.");
+  const event = await getEvent(eventId);
+  if (!event) throw new DataError(404, "Event not found.");
+  const now = Date.now();
+  if (
+    !event.ends_at ||
+    now < Date.parse(event.starts_at) ||
+    now >= Date.parse(event.ends_at)
+  ) {
+    throw new DataError(
+      409,
+      "Check-in is available only while the event is live.",
+    );
+  }
   const data = parse(attendeeSchema, input);
   const db = await getDatabase();
   const row = await db
