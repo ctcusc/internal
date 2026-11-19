@@ -19,4 +19,11 @@ export const tools: readonly Tool[] = [
     status: "available",
     href: "/flashcards",
   },
+  {
+    id: "attendance",
+    name: "Attendance",
+    icon: "people",
+    status: "available",
+    href: "/attendance",
+  },
 ];
