@@ -8,5 +8,8 @@ declare global {
     };
     SITE_PASSWORD: string;
     SESSION_SECRET: string;
+    SLACK_REACTION_CHANNEL_ID?: string;
+    SLACK_REACTION_EMOJI?: string;
+    SLACK_SIGNING_SECRET?: string;
   }
 }

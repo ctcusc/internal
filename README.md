@@ -127,3 +127,65 @@ import {
 
 Keep these imports server-side. Validate project-specific rules in your own code;
 the starter validates basic fields and uses parameterized SQL.
+
+## Slack reactions
+
+`POST /api/slack/events` receives Slack Events API callbacks and counts one emoji
+in one channel. It is authenticated by Slack's request signature (not the club
+login). Only `reaction_added`/`reaction_removed` on messages in
+`SLACK_REACTION_CHANNEL_ID` with `SLACK_REACTION_EMOJI` are passed to
+`applySlackReactionEvent` (`src/server/data/slack-reactions.ts`); every other
+verified event is acknowledged with 200 and ignored. Storage is idempotent, so
+Slack retries are reapplied safely. A storage failure returns 500 so Slack
+retries later.
+
+| Variable                    | Example     | Notes                                           |
+| --------------------------- | ----------- | ----------------------------------------------- |
+| `SLACK_SIGNING_SECRET`      | (secret)    | Required; the route returns 503 without it.     |
+| `SLACK_REACTION_CHANNEL_ID` | `C0123ABCD` | Channel ID, not name. Unset ignores all events. |
+| `SLACK_REACTION_EMOJI`      | `tada`      | Short name without colons.                      |
+
+### Slack app setup
+
+1. At [api.slack.com/apps](https://api.slack.com/apps), choose **Create New App →
+   From scratch** in the CTC workspace.
+2. Under **OAuth & Permissions → Bot Token Scopes**, add `reactions:read`, then
+   **Install to Workspace**. The route never calls Slack, so the bot token is not
+   stored.
+3. Set the Cloudflare configuration (production keeps these across deploys):
+
+   ```sh
+   pnpm exec wrangler secret put SLACK_SIGNING_SECRET      # Basic Information → App Credentials
+   pnpm exec wrangler secret put SLACK_REACTION_CHANNEL_ID
+   pnpm exec wrangler secret put SLACK_REACTION_EMOJI
+   ```
+
+4. Under **Event Subscriptions**, enable events and set the Request URL to
+   `https://internal.ctcusc.com/api/slack/events`. Slack sends a
+   `url_verification` challenge immediately, so the route and signing secret must
+   already be deployed. Under **Subscribe to bot events**, add `reaction_added` and
+   `reaction_removed`, save, and reinstall the app if prompted.
+5. In the agreed channel, run `/invite @<app name>`. Bot events are only sent for
+   channels the app is a member of. Copy the channel ID from the channel's
+   details.
+
+Reactions with skin tones arrive as names like `thumbsup::skin-tone-2` and do not
+match the base emoji. Only reactions made after setup are counted.
+
+### Testing locally
+
+Put the three variables in `.env.local` (for `pnpm dev`) or `.dev.vars` (for
+`pnpm preview`), then send a signed request:
+
+```sh
+body='{"type":"url_verification","challenge":"hello"}'
+ts=$(date +%s)
+sig="v0=$(printf 'v0:%s:%s' "$ts" "$body" | openssl dgst -sha256 -hmac "$SLACK_SIGNING_SECRET" | sed 's/^.* //')"
+curl -i http://localhost:3000/api/slack/events \
+  -H 'Content-Type: application/json' \
+  -H "X-Slack-Request-Timestamp: $ts" -H "X-Slack-Signature: $sig" -d "$body"
+```
+
+To receive real events locally, expose the dev server with a tunnel (for example
+`cloudflared tunnel --url http://localhost:3000`) and use that URL as a
+temporary Request URL.
