@@ -127,3 +127,30 @@ import {
 
 Keep these imports server-side. Validate project-specific rules in your own code;
 the starter validates basic fields and uses parameterized SQL.
+
+### Slack reaction webhook
+
+1. In the Slack app's **OAuth & Permissions**, add the bot scope `reactions:read`.
+   Install or reinstall the app in the workspace and invite it to the channel
+   whose message reactions you want to count.
+2. In **Basic Information → App Credentials**, copy the Signing Secret to
+   `SLACK_SIGNING_SECRET` on the receiving Worker. Configure
+   `SLACK_REACTION_CHANNEL_ID` with the channel ID and `SLACK_REACTION_EMOJI`
+   with the exact emoji name delivered by Slack (without surrounding colons).
+   Maintainers can set each value with `pnpm exec wrangler secret put <NAME>`
+   for the target Worker. For local tests, use fixture values in `.env.local`
+   with `pnpm dev` or in `.dev.vars` with the local Worker preview.
+3. Apply the D1 migrations and deploy the route. In **Event Subscriptions**,
+   enable events and enter the HTTPS URL ending in `/api/slack/events` on that
+   deployment. Slack sends a signed challenge to verify the URL. Subscribe to
+   the bot events `reaction_added` and `reaction_removed` and save the changes.
+4. Add and remove the selected emoji on a message in the target channel. The
+   count should increase and decrease once. A different emoji or channel should
+   leave it unchanged.
+
+The route authenticates the raw request with Slack's signing secret. It
+acknowledges unrelated events immediately and acknowledges matching events
+after the D1 write completes. A storage failure returns a retryable error. The
+writer uses Slack's event timestamp to handle repeated or late deliveries.
+See [Slack request signing](https://docs.slack.dev/authentication/verifying-requests-from-slack/)
+and the [Slack Events API](https://docs.slack.dev/apis/events-api/).

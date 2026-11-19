@@ -9,6 +9,7 @@ export const env = createEnv({
     SESSION_SECRET: z.string().min(32).optional(),
     SLACK_REACTION_CHANNEL_ID: z.string().trim().min(1).optional(),
     SLACK_REACTION_EMOJI: z.string().trim().min(1).optional(),
+    SLACK_SIGNING_SECRET: z.string().min(1).optional(),
   },
   client: {},
   runtimeEnv: {
@@ -17,6 +18,7 @@ export const env = createEnv({
     SESSION_SECRET: process.env.SESSION_SECRET,
     SLACK_REACTION_CHANNEL_ID: process.env.SLACK_REACTION_CHANNEL_ID,
     SLACK_REACTION_EMOJI: process.env.SLACK_REACTION_EMOJI,
+    SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET,
   },
   emptyStringAsUndefined: true,
 });

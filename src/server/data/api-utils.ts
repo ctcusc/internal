@@ -34,6 +34,20 @@ export async function readData(
   ) {
     throw new DataError(415, "Use Content-Type: application/json.");
   }
+  const body = await readBody(request, MAX_RECORD_BYTES);
+  try {
+    const data: unknown = JSON.parse(
+      new TextDecoder("utf-8", { fatal: true }).decode(body),
+    );
+    if (!data || typeof data !== "object" || Array.isArray(data))
+      throw new Error();
+    return data as Record<string, unknown>;
+  } catch {
+    throw new DataError(400, "Provide a valid JSON object.");
+  }
+}
+
+export async function readBody(request: Request, maxBytes: number) {
   const reader = request.body?.getReader();
   if (!reader) throw new DataError(400, "Provide a JSON object.");
   const chunks: Uint8Array[] = [];
@@ -43,9 +57,12 @@ export async function readData(
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > MAX_RECORD_BYTES) {
+      if (size > maxBytes) {
         await reader.cancel();
-        throw new DataError(413, "Data must be at most 16 KiB.");
+        throw new DataError(
+          413,
+          `Data must be at most ${maxBytes / 1024} KiB.`,
+        );
       }
       chunks.push(value);
     }
@@ -58,14 +75,5 @@ export async function readData(
     body.set(chunk, offset);
     offset += chunk.length;
   }
-  try {
-    const data: unknown = JSON.parse(
-      new TextDecoder("utf-8", { fatal: true }).decode(body),
-    );
-    if (!data || typeof data !== "object" || Array.isArray(data))
-      throw new Error();
-    return data as Record<string, unknown>;
-  } catch {
-    throw new DataError(400, "Provide a valid JSON object.");
-  }
+  return body;
 }
