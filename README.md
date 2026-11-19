@@ -38,8 +38,9 @@ Production and previews share four GitHub Actions secrets: `CLOUDFLARE_ACCOUNT_I
 
 D1 is bound as `DB` to `ctc-internal` (`dded22aa-c431-40e7-bae4-3d62f0540c16`).
 This starter supplies storage and basic reads/writes. Developers implement the
-short-code generation, redirect behavior, QR rendering, and attendance UI/workflows.
-There is no public redirect or unauthenticated attendance endpoint.
+short-code generation, QR rendering, and attendance UI/workflows.
+Anyone can follow a saved short link at `/s/[code]`. It returns a 302 redirect
+to the destination or a 404 for an unknown or invalid code.
 
 ### Database setup
 
@@ -78,7 +79,7 @@ for the CTC Cloudflare account.
 
 ### Endpoints
 
-All endpoints require the existing club login cookie. They are intended for
+All `/api` endpoints require the existing club login cookie. They are intended for
 same-origin pages in this app. All signed-in members share access; this is not
 individual identity verification or per-role authorization.
 

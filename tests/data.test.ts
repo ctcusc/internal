@@ -11,6 +11,8 @@ import {
   listEvents,
 } from "@/server/data/attendance";
 import { POST as postLink } from "@/app/api/links/route";
+import { GET as getLinkJson } from "@/app/api/links/[code]/route";
+import { GET as redirectShortLink } from "@/app/s/[code]/route";
 
 const state = vi.hoisted(() => ({
   signedIn: true,
@@ -76,6 +78,42 @@ it("paginates links", async () => {
     status: 400,
   });
 });
+
+it("redirects a signed-out visitor while keeping the JSON lookup private", async () => {
+  const code = "Workshop_26";
+  const url = "https://example.org/register?event=fall#agenda";
+  await createLink({ code, url });
+  state.signedIn = false;
+  const context = { params: Promise.resolve({ code }) };
+  const origin = "https://internal.ctcusc.com";
+  const redirect = await redirectShortLink(
+    new Request(`${origin}/s/${code}`),
+    context,
+  );
+  expect(redirect.status).toBe(302);
+  expect(redirect.headers.get("Location")).toBe(url);
+  const lookup = await getLinkJson(
+    new Request(`${origin}/api/links/${code}`),
+    context,
+  );
+  expect(lookup.status).toBe(401);
+});
+
+it.each(["missing-code", "x!", "a".repeat(65)])(
+  "returns 404 for short code %s",
+  async (code) => {
+    state.signedIn = false;
+    const response = await redirectShortLink(
+      new Request(`https://internal.ctcusc.com/s/${code}`),
+      {
+        params: Promise.resolve({ code }),
+      },
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.has("Location")).toBe(false);
+    expect(await response.text()).toContain("Short link not found.");
+  },
+);
 it.each([
   "javascript:alert(1)",
   "data:text/html,hi",
