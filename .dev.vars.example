@@ -1,3 +1,8 @@
 # Local Cloudflare preview: copy to .dev.vars.
 SITE_PASSWORD=
 SESSION_SECRET=
+# Slack channel ID and emoji name (without colons) to count.
+SLACK_REACTION_CHANNEL_ID=
+SLACK_REACTION_EMOJI=
+# Slack app > Basic Information > App Credentials > Signing Secret.
+SLACK_SIGNING_SECRET=
