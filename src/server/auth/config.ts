@@ -10,4 +10,14 @@ export function getAuthConfig() {
   };
 }
 
+export function getGoogleConfig() {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.SESSION_SECRET)
+    return null;
+  return {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    sessionSecret: env.SESSION_SECRET,
+  };
+}
+
 export type AuthConfig = NonNullable<ReturnType<typeof getAuthConfig>>;

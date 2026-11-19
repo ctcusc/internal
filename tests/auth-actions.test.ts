@@ -1,6 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { signIn, signOut } from "@/server/auth/actions";
 import { getClubSession, requireClubSession } from "@/server/auth/server";
+import { IDENTITY_COOKIE } from "@/server/auth/identity";
 import { createSession, SESSION_COOKIE } from "@/server/auth/session";
 
 const mocks = vi.hoisted<{
@@ -94,7 +95,8 @@ it("permits protected access with a valid cookie", async () => {
   mocks.get.mockReturnValue({ value: await createSession(mocks.config!) });
   expect((await requireClubSession()).access).toBe("club");
 });
-it("clears the cookie on sign-out", async () => {
+it("clears the club and Google identity cookies on sign-out", async () => {
   await expect(signOut()).rejects.toThrow("redirect:/");
   expect(mocks.delete).toHaveBeenCalledWith(SESSION_COOKIE);
+  expect(mocks.delete).toHaveBeenCalledWith(IDENTITY_COOKIE);
 });

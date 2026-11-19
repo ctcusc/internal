@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getAuthConfig } from "./config";
+import { IDENTITY_COOKIE } from "./identity";
 import { checkLoginRateLimit } from "./rate-limit";
 import { safeReturnTo } from "./redirect";
 import {
@@ -60,5 +61,6 @@ export async function signIn(
 export async function signOut() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(IDENTITY_COOKIE);
   redirect("/");
 }
